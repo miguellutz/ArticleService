@@ -1,4 +1,7 @@
 package com.obi.articleservice.repository;
 
-public interface CountryArticleRepository {
+import com.obi.articleservice.model.CountryArticle;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CountryArticleRepository extends JpaRepository<CountryArticle, String> {
 }

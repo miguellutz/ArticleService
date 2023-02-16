@@ -1,11 +1,24 @@
 package com.obi.articleservice.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "article")
 public class Article {
 
+    @Id
+    @Column(name = "id")
     private String id;
+    @Column(name = "international_article_number")
     private String internationalArticleNumber;
+    @Column(name = "height")
     private double height;
+    @Column(name = "width")
     private double width;
+    @Column(name = "length")
     private double length;
 
     public Article() {
