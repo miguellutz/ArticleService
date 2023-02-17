@@ -1,0 +1,1 @@
+INSERT INTO article (id, international_article_number, height, width, length) VALUES ('1', '123', 1, 1, 1);
