@@ -7,7 +7,7 @@ public class ContextTest {
     public void test() {
         LutzContext lutzContext = new LutzContext();
 
-        // instanziiren den Service = bean
+        // instanziieren den Service = bean
         FirstService firstService = new FirstService("test");
         // packen wir als bean in den Context
         lutzContext.getContext().put("firstService", firstService);

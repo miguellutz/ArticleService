@@ -25,20 +25,6 @@ public class ArticleService {       // bean: class with business logic (spring /
     }
     */
 
-    public List<Article> getAllArticles() {
-        return articleRepository.findAll();
-    }
-
-    public void addArticle() {
-        Article article = new Article();
-        article.setId("1234");
-        article.setInternationalArticleNumber("1234");
-        article.setHeight(2);
-        article.setLength(2);
-        article.setWidth(2);
-        articleRepository.save(article);
-    }
-
     public Article updateArticle() {
         Optional<Article> article = articleRepository.findById("1234");
         if (article.isPresent()) {
@@ -48,29 +34,50 @@ public class ArticleService {       // bean: class with business logic (spring /
         return null;
     }
 
-    public void deleteArticle() {
-        articleRepository.deleteById("1234");
-    }
+    public Article save(String id,
+                        String internationalArticleNumber,
+                        double height,
+                        double width,
+                        double length) {
 
-
-    public Article save(Article article){
-        return null;
-    }
-
-    public void delete(Article article){
-        deleteById(article.getId());
+        Optional<Article> article = articleRepository.findById(id);
+        if (article.isPresent()) {
+            article.get().setInternationalArticleNumber(internationalArticleNumber)
+                    .setHeight(height)
+                    .setWidth(width)
+                    .setLength(length);
+            articleRepository.save(article.get()); // warum nicht einfach article?
+            // warum hier nicht möglich article zu returnen?
+        }
+        Article newArticle = new Article();
+        newArticle.setId(id)
+                .setInternationalArticleNumber(internationalArticleNumber)
+                .setHeight(height)
+                .setWidth(width)
+                .setLength(length);
+        articleRepository.save(newArticle);
+        return newArticle;
     }
 
     public Optional<Article> findById(String id){
-        return Optional.empty();
+        Optional<Article> article = articleRepository.findById(id);
+        return article;
     }
 
-    public void deleteById(String id){
+    public void delete(Article article){
+        articleRepository.deleteById(article.getId());
+    }
 
+    public String deleteById(String id){
+        Optional<Article> foundArticle = articleRepository.findById(id);
+        if (foundArticle.isPresent()) {
+            articleRepository.deleteById(id);
+            return "Article deleted";
+        }
+        return "Article not found";
     }
 
     public List<Article> findAll(){
-        return Collections.EMPTY_LIST;
+        return articleRepository.findAll();
     }
-
 }
