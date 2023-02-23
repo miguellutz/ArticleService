@@ -24,14 +24,8 @@ public class ArticleService {       // bean: class with business logic (spring /
         this.countryArticleRepository = countryArticleRepository;
     }
     */
-
-    public Article updateArticle() {
-        Optional<Article> article = articleRepository.findById("1234");
-        if (article.isPresent()) {
-            article.get().setLength(3);
-            return articleRepository.save(article.get());
-        }
-        return null;
+    public List<Article> findAll(){
+        return articleRepository.findAll();
     }
 
     public Article save(String id,
@@ -75,9 +69,5 @@ public class ArticleService {       // bean: class with business logic (spring /
             return "Article deleted";
         }
         return "Article not found";
-    }
-
-    public List<Article> findAll(){
-        return articleRepository.findAll();
     }
 }

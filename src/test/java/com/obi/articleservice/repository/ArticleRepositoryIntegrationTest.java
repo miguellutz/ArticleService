@@ -23,7 +23,6 @@ public class ArticleRepositoryIntegrationTest {
                 .setLength(123)
                 .setWidth(123);
         articleRepository.save(article);
-
     }
     @Test
     public void testReadArticle() {
@@ -49,7 +48,5 @@ public class ArticleRepositoryIntegrationTest {
         /*foundById.ifPresentOrElse(
                 foundArticle -> System.out.println(foundArticle.getId()+ " is present"),
                 () -> System.out.println("not present"));*/
-
-
     }
 }

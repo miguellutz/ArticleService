@@ -17,22 +17,34 @@ public class ArticleController {
     ArticleService articleService;
 
     @GetMapping
-    public List<Article> getAllArticles() {
-        return articleService.getAllArticles();
+    public List<Article> findAll() {
+        return articleService.findAll();
     }
 
     @PostMapping
-    public void addNewArticle() {
-        articleService.addArticle();
-    }
-
-    @DeleteMapping
-    public void deleteArticle() {
-        articleService.deleteArticle();
+    public Article save(String id,
+                     String internationalArticleNumber,
+                     double height,
+                     double width,
+                     double length) {
+        Article article = articleService.save(id, internationalArticleNumber, height, width, length);
+        return article;
     }
 
     @PutMapping
-    public void updateArticle() {
-        articleService.updateArticle();
+    public void update(String id,
+                       String internationalArticleNumber,
+                       double height,
+                       double width,
+                       double length) {
+        articleService.save(id, internationalArticleNumber, height, width, length);
     }
+
+    @DeleteMapping
+    public void deleteById(String id) {
+        articleService.deleteById(id);
+    }
+
+    //@DeleteMapping
+    //public void delete(Article article) { articleService.delete(article); }
 }
