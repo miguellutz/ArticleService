@@ -4,43 +4,20 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
-@Table(name = "country_article")
+@Table
+@Getter
+@Setter
+// @NoArgsConstructor (Default Constructor) --> as soon as new constructor added need to add manually
 public class CountryArticle {
 
     @Id
-    @Column(name = "id")
     private String id;
-    @Column(name = "title")
-
     private String title;
-    @Column(name = "active")
-    private boolean active;
+    private Boolean active; // work with classes instead of primitives to prevent default value
 
-    public CountryArticle() {
-    }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
 }

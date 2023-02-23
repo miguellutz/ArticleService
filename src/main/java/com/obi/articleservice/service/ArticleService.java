@@ -2,20 +2,28 @@ package com.obi.articleservice.service;
 
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.repository.ArticleRepository;
-import com.obi.articleservice.repository.CountryArticleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+
 @Service
-public class ArticleService {
+@RequiredArgsConstructor
+public class ArticleService {       // bean: class with business logic (spring / frameworks)
+
+    // no need for @Autowired due to bean detection from spring boot
+    private final ArticleRepository articleRepository;
+
+    /*
     @Autowired
-    ArticleRepository articleRepository;
-    @Autowired
-    CountryArticleRepository countryArticleRepository;
+    public ArticleService(@Autowired ArticleRepository articleRepository,@Autowired CountryArticleRepository countryArticleRepository) {
+        this.articleRepository = articleRepository;
+        this.countryArticleRepository = countryArticleRepository;
+    }
+    */
 
     public List<Article> getAllArticles() {
         return articleRepository.findAll();
@@ -33,7 +41,7 @@ public class ArticleService {
 
     public Article updateArticle() {
         Optional<Article> article = articleRepository.findById("1234");
-        if(article.isPresent()) {
+        if (article.isPresent()) {
             article.get().setLength(3);
             return articleRepository.save(article.get());
         }
@@ -44,5 +52,25 @@ public class ArticleService {
         articleRepository.deleteById("1234");
     }
 
+
+    public Article save(Article article){
+        return null;
+    }
+
+    public void delete(Article article){
+        deleteById(article.getId());
+    }
+
+    public Optional<Article> findById(String id){
+        return Optional.empty();
+    }
+
+    public void deleteById(String id){
+
+    }
+
+    public List<Article> findAll(){
+        return Collections.EMPTY_LIST;
+    }
 
 }
