@@ -40,17 +40,18 @@ public class ArticleService {       // bean: class with business logic (spring /
                     .setHeight(height)
                     .setWidth(width)
                     .setLength(length);
-            articleRepository.save(article.get()); // warum nicht einfach article?
+            Article newArticle = articleRepository.save(article.get()); // warum nicht einfach article?
             // warum hier nicht möglich article zu returnen?
+            return newArticle;
         }
-        Article newArticle = new Article();
-        newArticle.setId(id)
+        Article articleToUpdate = new Article();
+        articleToUpdate.setId(id)
                 .setInternationalArticleNumber(internationalArticleNumber)
                 .setHeight(height)
                 .setWidth(width)
                 .setLength(length);
-        articleRepository.save(newArticle);
-        return newArticle;
+        articleRepository.save(articleToUpdate);
+        return articleToUpdate;
     }
 
     public Optional<Article> findById(String id){
