@@ -14,8 +14,6 @@ public class ArticleServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(ArticleServiceApplication.class, args);
 
-
-
     }
 
 }
