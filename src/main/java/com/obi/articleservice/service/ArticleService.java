@@ -4,10 +4,12 @@ import com.obi.articleservice.model.Article;
 import com.obi.articleservice.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
@@ -28,35 +30,15 @@ public class ArticleService {       // bean: class with business logic (spring /
         return articleRepository.findAll();
     }
 
-    public Article save(String id,
-                        String internationalArticleNumber,
-                        double height,
-                        double width,
-                        double length) {
-
-        Optional<Article> article = articleRepository.findById(id);
-        if (article.isPresent()) {
-            article.get().setInternationalArticleNumber(internationalArticleNumber)
-                    .setHeight(height)
-                    .setWidth(width)
-                    .setLength(length);
-            Article updatedArticle = articleRepository.save(article.get()); // warum nicht einfach article?
-            // warum hier nicht möglich article zu returnen?
-            return updatedArticle;
+    public Article save(Article article) {
+        if(article.getId()==null || article.getId().isBlank()){
+            article.setId(UUID.randomUUID().toString());
         }
-        Article articleToSave = new Article();
-        articleToSave.setId(id)
-                .setInternationalArticleNumber(internationalArticleNumber)
-                .setHeight(height)
-                .setWidth(width)
-                .setLength(length);
-        articleRepository.save(articleToSave);
-        return articleToSave;
+        return articleRepository.save(article);
     }
 
     public Optional<Article> findById(String id){
-        Optional<Article> article = articleRepository.findById(id);
-        return article;
+        return articleRepository.findById(id);
     }
 
     public void delete(Article article){
@@ -64,12 +46,11 @@ public class ArticleService {       // bean: class with business logic (spring /
     }
 
     // Wie kann ich String mit message returnen und gleichzeitig aber auch gelöschtes Objekt?
-    public String deleteById(String id){
-        Optional<Article> foundArticle = articleRepository.findById(id);
-        if (foundArticle.isPresent()) {
-            articleRepository.deleteById(id);
-            return "Article deleted";
-        }
-        return "Article not found";
+    public void deleteById(String id){
+       articleRepository.deleteById(id);
+    }
+
+    public boolean existsById(String id) {
+        return articleRepository.existsById(id);
     }
 }

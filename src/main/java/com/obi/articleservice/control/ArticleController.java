@@ -3,7 +3,9 @@ package com.obi.articleservice.control;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,33 +23,52 @@ public class ArticleController {
         return articleService.findAll();
     }
 
+    // GET /article/uuid-12-udasdasd
     @GetMapping("/{id}")
-    public Optional<Article> findById(@PathVariable(value = "id") String id) { return articleService.findById(id); }
-
-    @PostMapping
-    public Article save(String id,
-                     String internationalArticleNumber,
-                     double height,
-                     double width,
-                     double length) {
-        Article article = articleService.save(id, internationalArticleNumber, height, width, length);
-        return article;
+    public ResponseEntity<Article> findById(@PathVariable(value = "id") String id) { // Optional Article might not be found
+        Optional<Article> foundArticle = articleService.findById(id);
+        if(foundArticle.isPresent()){
+            Article article = foundArticle.get();
+            return ResponseEntity.ok(article);
+        }else{
+            return ResponseEntity
+                    .notFound()
+                    .build();
+        }
     }
 
+    @PostMapping
+    public ResponseEntity<Article> save(Article article) {
+        boolean articleIsInvalid = article == null || article.getId() == null || article.getId().isBlank(); // shift + F6 to rename all instances
+        if (articleIsInvalid) { // blank considers spaces "   "
+            return ResponseEntity.badRequest().build();
+        }
+        Article newArticle = articleService.save(article);
+        return ResponseEntity.ok(newArticle);
+    }
+
+    // PUT /article/uuid-12-udasdasd
     // wie nutze ich simultan params und erlaube gleichzeitig erstellung neuer?
-    @PutMapping //("/{id}")?
-    public void update(String id,
-                       String internationalArticleNumber,
-                       double height,
-                       double width,
-                       double length) {
-        articleService.save(id, internationalArticleNumber, height, width, length);
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable(value = "id") String id, Article article) {
+        if(!id.equals(article.getId())){
+            return ResponseEntity.badRequest().build();
+        }
+        if (!articleService.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id "+ id +" not found");
+        }
+        Article savedArticle = articleService.save(article);
+        return ResponseEntity.ok(savedArticle);
     }
 
     // delete über params oder gepasster id?
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable(value = "id") String id) {
+    public ResponseEntity<Object> deleteById(@PathVariable(value = "id") String id) {
+        if(!articleService.existsById(id)){
+            return ResponseEntity.badRequest().build();
+        }
         articleService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 
     //@DeleteMapping

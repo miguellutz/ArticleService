@@ -13,8 +13,9 @@ import java.util.List;
 // @NoArgsConstructor --> default constructor
 @Data      // für standard plain old java objects (pojos) --> getter, setter, noargs... (von Lombok)
 @Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Article {
-
     @Id
     private String id;       // final muss und darf nur einmal instantiert werden (best practice)
     private String internationalArticleNumber;
@@ -22,5 +23,7 @@ public class Article {
     private double width;
     private double length;
 
+    // validation.article.height.notnull
+    // DE -> validation.article.height.notnull -> Ein Article muss eine Höhe haben
     //private List<CountryArticle> countryArticles;
 }
