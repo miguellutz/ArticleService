@@ -6,6 +6,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+@ToString
 @Getter
 @RequiredArgsConstructor
 public class ArticleDto { // no need for noargsconstructor, possibility to hide properties otherwise exposed in normal article

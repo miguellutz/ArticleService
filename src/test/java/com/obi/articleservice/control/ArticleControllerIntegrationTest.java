@@ -78,7 +78,6 @@ public class ArticleControllerIntegrationTest {
 
         // WHEN request article by id
         // GET Request /api/article/${id}
-        HttpHeaders headers = new HttpHeaders();
         ResponseEntity<ArticleDto> response = restTemplate.getForEntity("http://localhost:" + port + "/api/article/" + id, ArticleDto.class);
 
         // THEN assert article returned is equal to persistd one
@@ -95,7 +94,6 @@ public class ArticleControllerIntegrationTest {
 
         // WHEN request article by id
         // GET Request /api/article/${id}
-        HttpHeaders headers = new HttpHeaders();
         ResponseEntity<ArticleDto> response = restTemplate.getForEntity("http://localhost:" + port + "/api/article/1234", ArticleDto.class);
 
         // THEN assert HttpStatusCode is equal to 404
@@ -165,13 +163,4 @@ public class ArticleControllerIntegrationTest {
                 Arguments.of(new ArticleDto(null, "123", 20.0, 20.0, null))
         );
     }
-
-
-    private List<Article> parseToArticleList(String contentAsString) {
-        return null;
-    }
-
-    // return 404 when GET non-existing article
-
-
 }

@@ -49,7 +49,14 @@ public class ArticleController {
     }
 
     private static boolean isArticleValid(ArticleDto articleDto) { // in methode auslagern mit opt + cmd + n
-        return articleDto != null && articleDto.getId() == null && articleDto.getInternationalArticleNumber() != null && !articleDto.getInternationalArticleNumber().isBlank();
+        return articleDto != null
+                && articleDto.getId() == null
+                && articleDto.getInternationalArticleNumber() != null
+                && !articleDto.getInternationalArticleNumber().isBlank()
+                && articleDto.getWidth() != null
+                && articleDto.getLength() != null
+                && articleDto.getHeight() != null;
+
     }
 
     private Article map(ArticleDto articleDto) {
