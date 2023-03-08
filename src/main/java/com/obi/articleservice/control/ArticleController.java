@@ -1,5 +1,6 @@
 package com.obi.articleservice.control;
 
+import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/api/articles", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/article", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ArticleController {
 
     @Autowired                      // replaces constructor and automatically injects dependencies from ArticleService
@@ -25,12 +26,12 @@ public class ArticleController {
 
     // GET /article/uuid-12-udasdasd
     @GetMapping("/{id}")
-    public ResponseEntity<Article> findById(@PathVariable(value = "id") String id) { // Optional Article might not be found
+    public ResponseEntity<ArticleDto> findById(@PathVariable(value = "id") String id) { // Optional Article might not be found
         Optional<Article> foundArticle = articleService.findById(id);
-        if(foundArticle.isPresent()){
+        if (foundArticle.isPresent()) {
             Article article = foundArticle.get();
-            return ResponseEntity.ok(article);
-        }else{
+            return ResponseEntity.ok(map(article));
+        } else {
             return ResponseEntity
                     .notFound()
                     .build();
@@ -38,24 +39,38 @@ public class ArticleController {
     }
 
     @PostMapping
-    public ResponseEntity<Article> save(Article article) {
-        boolean articleIsInvalid = article == null || article.getId() == null || article.getId().isBlank(); // shift + F6 to rename all instances
-        if (articleIsInvalid) { // blank considers spaces "   "
+    public ResponseEntity<ArticleDto> save(@RequestBody ArticleDto articleDto) {
+        boolean articleIsValid = articleDto != null && articleDto.getId() == null; // shift + F6 to rename all instances
+        if (!articleIsValid) { // blank considers spaces "   "
             return ResponseEntity.badRequest().build();
         }
-        Article newArticle = articleService.save(article);
-        return ResponseEntity.ok(newArticle);
+        Article newArticle = articleService.save(map(articleDto));
+        return ResponseEntity.ok(map(newArticle));
+    }
+
+    private Article map(ArticleDto articleDto) {
+        Article article = new Article();
+        article.setId(articleDto.getId());
+        article.setInternationalArticleNumber(articleDto.getInternationalArticleNumber());
+        article.setWidth(articleDto.getWidth());
+        article.setLength(articleDto.getLength());
+        article.setHeight(articleDto.getHeight());
+        return article;
+    }
+
+    private ArticleDto map(Article article) {
+        return new ArticleDto(article.getId(), article.getInternationalArticleNumber(), article.getHeight(), article.getWidth(), article.getLength());
     }
 
     // PUT /article/uuid-12-udasdasd
-    // wie nutze ich simultan params und erlaube gleichzeitig erstellung neuer?
+    // wie nutze ich simultan params und erlaube gleichzeitig erstellung neuer ?
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable(value = "id") String id, Article article) {
-        if(!id.equals(article.getId())){
+        if (!id.equals(article.getId())) {
             return ResponseEntity.badRequest().build();
         }
         if (!articleService.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id "+ id +" not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id " + id + " not found");
         }
         Article savedArticle = articleService.save(article);
         return ResponseEntity.ok(savedArticle);
@@ -64,7 +79,7 @@ public class ArticleController {
     // delete über params oder gepasster id?
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteById(@PathVariable(value = "id") String id) {
-        if(!articleService.existsById(id)){
+        if (!articleService.existsById(id)) {
             return ResponseEntity.badRequest().build();
         }
         articleService.deleteById(id);

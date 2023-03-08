@@ -17,11 +17,11 @@ import java.util.List;
 @NoArgsConstructor
 public class Article {
     @Id
-    private String id;       // final muss und darf nur einmal instantiert werden (best practice)
+    private String id;// final muss und darf nur einmal instantiert werden (best practice)
     private String internationalArticleNumber;
-    private double height;
-    private double width;
-    private double length;
+    private Double height;
+    private Double width;
+    private Double length;
 
     // validation.article.height.notnull
     // DE -> validation.article.height.notnull -> Ein Article muss eine Höhe haben

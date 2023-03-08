@@ -19,9 +19,9 @@ public class ArticleRepositoryIntegrationTest {
         Article article = new Article()
                 .setId(UUID.randomUUID().toString())        // method chaining due to lombok and Article return type instead of void
                 .setInternationalArticleNumber("123")
-                .setHeight(123)
-                .setLength(123)
-                .setWidth(123);
+                .setHeight(2.0)
+                .setLength(2.0)
+                .setWidth(2.0);
         articleRepository.save(article);
     }
     @Test
@@ -34,9 +34,9 @@ public class ArticleRepositoryIntegrationTest {
         Article article = new Article()
                 .setId(id)        // method chaining due to lombok and Article return type instead of void
                 .setInternationalArticleNumber("123")
-                .setHeight(123)
-                .setLength(123)
-                .setWidth(123);
+                .setHeight(2.0)
+                .setLength(2.0)
+                .setWidth(2.0);
         articleRepository.save(article);
 
         // WHEN
