@@ -13,12 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -146,9 +144,11 @@ public class ArticleControllerIntegrationTest {
     @MethodSource({"testWithInvalidArticles"})
     void testPersistInvalidArticles(ArticleDto invalidArticle) { // tests package private by default
         assertThat(articleRepository.count()).isEqualTo(0);
-
+        ParameterizedTypeReference<Map<String, String>> responseType =
+                new ParameterizedTypeReference<>() {};
         HttpEntity<ArticleDto> request = new HttpEntity<>(invalidArticle, new HttpHeaders());
-        ResponseEntity<ArticleDto> response = restTemplate.postForEntity("http://localhost:" + port + "/api/article", request, ArticleDto.class);
+        //ResponseEntity<ArticleDto> response = restTemplate.postForEntity("http://localhost:" + port + "/api/article",request, ArticleDto.class); --> response is Error Map and not ArticleDto (deserialization error)
+        ResponseEntity<Map<String, String>> response = restTemplate.exchange("http://localhost:" + port + "/api/article", HttpMethod.POST,request, responseType);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
         assertThat(articleRepository.count()).isEqualTo(0);
     }

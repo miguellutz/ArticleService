@@ -23,7 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ArticleController.class)
 public class ArticleControllerTest {
-
+    @Autowired
+    private MockMvc mvc;
     @Autowired
     private ArticleRepository articleRepository;
 
@@ -42,8 +43,7 @@ public class ArticleControllerTest {
         System.out.println(port);
     }
 
-    @Autowired
-    private MockMvc mvc;
+
 
     @DisplayName("Return array of all JSON articles")
     @Test

@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.0.2"
+    id("org.springframework.boot") version "3.0.4"
     id("io.spring.dependency-management") version "1.1.0"
 }
 
@@ -27,7 +27,8 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 
 tasks.withType<Test> {
