@@ -40,12 +40,16 @@ public class ArticleController {
 
     @PostMapping
     public ResponseEntity<ArticleDto> save(@RequestBody ArticleDto articleDto) {
-        boolean articleIsValid = articleDto != null && articleDto.getId() == null; // shift + F6 to rename all instances
+        boolean articleIsValid = isArticleValid(articleDto); // shift + F6 to rename all instances
         if (!articleIsValid) { // blank considers spaces "   "
             return ResponseEntity.badRequest().build();
         }
         Article newArticle = articleService.save(map(articleDto));
         return ResponseEntity.ok(map(newArticle));
+    }
+
+    private static boolean isArticleValid(ArticleDto articleDto) { // in methode auslagern mit opt + cmd + n
+        return articleDto != null && articleDto.getId() == null && articleDto.getInternationalArticleNumber() != null && !articleDto.getInternationalArticleNumber().isBlank();
     }
 
     private Article map(ArticleDto articleDto) {
