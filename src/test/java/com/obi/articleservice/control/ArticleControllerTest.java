@@ -1,88 +1,65 @@
 package com.obi.articleservice.control;
 
+import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.repository.ArticleRepository;
+import com.obi.articleservice.service.ArticleService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// never implement more than 5 dependencies --> if necessary split into different classes
 @WebMvcTest(ArticleController.class)
 public class ArticleControllerTest {
     @Autowired
     private MockMvc mvc;
-    @Autowired
-    private ArticleRepository articleRepository;
+    @MockBean
+    private ArticleService articleService;
 
-    @BeforeEach
-        // --> necessary?
-    void cleanDB() { // to wipe DB for each test in case data left from another test
-        articleRepository.deleteAll();
+    @Test
+    void testStartup() {
+        // empty by design
     }
 
-    @LocalServerPort
-    private Integer port;
-
-    @DisplayName("Print current port")
     @Test
-    public void printPortsInUse() {
-        System.out.println(port);
-    }
+    void findById() throws Exception {
+        // GIVEN
+        String id = UUID.randomUUID().toString();
+        RequestBuilder request = MockMvcRequestBuilders.get("/api/article/" + id);
 
+        Article foundArticle = new Article(id, "3242", 20.0, 2.0, 2.0);
+        Mockito.when(articleService.findById(id)).thenReturn(Optional.of(foundArticle));
 
-
-    @DisplayName("Return array of all JSON articles")
-    @Test
-    void findAll() throws Exception {
-        // [{},{}]
-        Article save = articleRepository.save(new Article(UUID.randomUUID().toString(), "dasdasd", 20.0, 20.0, 2.0));
-        RequestBuilder request = MockMvcRequestBuilders.get("/api/articles");
+        //WHEN //THEN
+        // {"id": "283746283746", "international"}
         mvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$.[0].id").value(save.getId()));
-
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.internationalArticleNumber").value(foundArticle.getInternationalArticleNumber()))
+                .andExpect(jsonPath("$.height").value(foundArticle.getHeight()))
+                .andExpect(jsonPath("$.width").value(foundArticle.getWidth()))
+                .andExpect(jsonPath("$.length").value(foundArticle.getLength()));
+        Mockito.verify(articleService, Mockito.times(1)).findById(id);  // verify that articleService mock was used once
     }
-
-    private List<Article> parseToArticleList(String contentAsString) {
-        return null;
-    }
-
-    @DisplayName("Return JSON of article with id = 1")
-    @Test
-    public void findById() throws Exception {
-        RequestBuilder request = MockMvcRequestBuilders.get("api/articles/1"); // id hardcoden oder dynamisch
-        MvcResult result = mvc.perform(request).andReturn();
-        Assertions.assertEquals("{\"id\":\"1\",\"internationalArticleNumber\":\"123\",\"height\":1.0,\"width\":1.0,\"length\":1.0}", result.getResponse().getContentAsString());
-    }
-
-    @DisplayName("Return 202 Status code when deleting article")
-    @Test
-    public void delete() throws Exception {
-        String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
-
-        RequestBuilder request = MockMvcRequestBuilders.delete("api/articles/" + id);
-        MvcResult result = mvc.perform(request).andReturn();
-        Assertions.assertEquals("202", result.getResponse().getStatus());
-    }
-
-    // return 404 when GET non-existing article
 
 
 }

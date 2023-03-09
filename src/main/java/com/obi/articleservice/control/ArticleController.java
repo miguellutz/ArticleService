@@ -4,6 +4,7 @@ import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,13 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/api/article", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ArticleController {
 
-    @Autowired                      // replaces constructor and automatically injects dependencies from ArticleService
-    ArticleService articleService;
+                    // replaces constructor and automatically injects dependencies from ArticleService
+    private final ArticleService articleService;
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)

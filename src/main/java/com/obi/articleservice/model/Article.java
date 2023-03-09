@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Article {
-    @Id
+    @Id // for mapping id to DB entity for articleRepository.findById
     private String id; // final muss und darf nur einmal instantiert werden (best practice)
     @NotBlank(message = "International article number cannot be blank") // with @NotBlank --> NotEmpty and NotNull redundant
     private String internationalArticleNumber;
