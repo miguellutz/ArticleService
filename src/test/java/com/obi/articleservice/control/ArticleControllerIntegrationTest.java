@@ -17,9 +17,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -201,5 +203,71 @@ public class ArticleControllerIntegrationTest {
                 Arguments.of(new ArticleDto(null, "123", 20.0, null, 2.0)),
                 Arguments.of(new ArticleDto(null, "123", 20.0, 20.0, null))
         );
+    }
+
+    @DisplayName("Ensure existing article is updated")
+    @Test
+    void update() {
+        assertThat(articleRepository.count()).isEqualTo(0);
+
+        String id = UUID.randomUUID().toString();
+        Article newArticle = new Article(id, "123", 2.0, 2.0, 2.0);
+        articleRepository.save(newArticle);
+
+        assertThat(articleRepository.count()).isEqualTo(1);
+
+        newArticle.setInternationalArticleNumber("321");
+        // articleRepository.save(newArticle);
+
+        // Optional<Article> articleToUpdate = articleRepository.findById(id);
+        // assertThat(articleToUpdate.get().getInternationalArticleNumber()).isEqualTo("321");
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Article> requestUpdate = new HttpEntity<>(newArticle, headers);
+        ResponseEntity<?> response = restTemplate.exchange(url + port + "/api/article/" + id, HttpMethod.PUT, requestUpdate, Article.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
+    }
+
+    @DisplayName("Ensure update on non-existing article throws 404 not found")
+    @Test
+    void updateNonExistingArticle() {
+
+    }
+
+    @DisplayName("Ensure update on article with other id than path throws 400 bad request")
+    @Test
+    void updateIdMismatchArticle() {
+
+    }
+
+    @DisplayName("Ensure deletion of article returns 200")
+    @Test
+    void delete() {
+        assertThat(articleRepository.count()).isEqualTo(0);
+
+        String id = UUID.randomUUID().toString();
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        articleRepository.save(article);
+
+        assertThat(articleRepository.count()).isEqualTo(1);
+        HttpEntity<Article> requestDeletion = new HttpEntity<>(article);
+        ResponseEntity<?> response = restTemplate.exchange(url + port + "/api/article/" + id, HttpMethod.DELETE, requestDeletion, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
+    }
+
+    @DisplayName("Ensure deletion of non-existing article returns 400 bad request")
+    @Test
+    void deleteNonExistingArticle() {
+        assertThat(articleRepository.count()).isEqualTo(0);
+
+        String id = UUID.randomUUID().toString();
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        articleRepository.save(article);
+
+        assertThat(articleRepository.count()).isEqualTo(1);
+        HttpEntity<Article> requestDeletion = new HttpEntity<>(article);
+        ResponseEntity<?> response = restTemplate.exchange(url + port + "/api/article/" + 123, HttpMethod.DELETE, requestDeletion, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
     }
 }
