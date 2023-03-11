@@ -25,6 +25,7 @@ public class MyTestObject {
         this.mutableProperty = mutableProperty;
     }
 
-
-
+    public void setMutableProperty(String mutableProperty) {        // why does @Setter annotation not work?
+        this.mutableProperty = mutableProperty;
+    }
 }

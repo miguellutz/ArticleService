@@ -66,7 +66,7 @@ public class ArticleController {
 
 
     @GetMapping
-    public List<Article> findAll() {
+    public List<Article> findAll() {        // no need to return ResponseEntity since findAll will always return list even if empty?
         return articleService.findAll();
     }
 
@@ -76,7 +76,7 @@ public class ArticleController {
         Optional<Article> foundArticle = articleService.findById(id);
         if (foundArticle.isPresent()) {
             Article article = foundArticle.get();
-            return ResponseEntity.ok(map(article));
+            return ResponseEntity.ok(map(article));     // working with ArticleDto to not expose all properties?
         } else {
             return ResponseEntity
                     .notFound()

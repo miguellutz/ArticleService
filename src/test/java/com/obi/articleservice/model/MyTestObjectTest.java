@@ -1,9 +1,12 @@
 package com.obi.articleservice.model;
 
+import org.junit.jupiter.api.Test;
+
 public class MyTestObjectTest {
 
     void testDefaultConstructor(){
         MyTestObject myTestObject = new MyTestObject();
+        myTestObject.setMutableProperty("test");
         myTestObject.setMutableProperty("test1");
         myTestObject.setMutableProperty("test2");
         myTestObject.setMutableProperty("test3");
@@ -21,6 +24,4 @@ public class MyTestObjectTest {
         MyTestObject myTestObject = new MyTestObject("final property");
         myTestObject.setMutableProperty("not final");
     }
-
-
 }

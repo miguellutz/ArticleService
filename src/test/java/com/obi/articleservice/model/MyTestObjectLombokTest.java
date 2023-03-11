@@ -1,5 +1,7 @@
 package com.obi.articleservice.model;
 
+import org.junit.jupiter.api.Test;
+
 public class MyTestObjectLombokTest {
 
     void testDefaultConstructor(){
