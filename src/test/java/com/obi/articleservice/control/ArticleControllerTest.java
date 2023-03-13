@@ -132,4 +132,14 @@ public class ArticleControllerTest {
             .andExpect(status().isOk());
     }
 
+    @Test
+    void deleteNonExistingArticle() throws Exception {
+        Mockito.when(articleService.existsById("123")).thenReturn(false);
+
+        RequestBuilder request = MockMvcRequestBuilders.delete("api/article/123");
+
+        mvc.perform(request)
+                .andExpect(status().isNotFound());
+    }
+
 }
