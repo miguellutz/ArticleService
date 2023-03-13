@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -112,6 +114,28 @@ public class ArticleControllerTest {
                 .andExpect(jsonPath("$.height").value(2.0))
                 .andExpect(jsonPath("$.width").value(2.0))
                 .andExpect(jsonPath("$.height").value(2.0));
+    }
+
+    @Test
+    void update() throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String id = UUID.randomUUID().toString();
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+
+        Mockito.when(articleService.existsById(id)).thenReturn(true);
+        Mockito.when(articleService.save(article)).thenReturn(article);
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity requestUpdate = new HttpEntity(article, headers);
+
+        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + id, requestUpdate)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(article));
+
+        mvc.perform(request)
+                .andExpect(status().isOk());
     }
 
     @Test
