@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.BDDAssumptions.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -112,8 +115,21 @@ public class ArticleControllerTest {
     }
 
     @Test
-    void delete() {
+    void delete() throws Exception {
+        String id = UUID.randomUUID().toString();
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
 
+        //doNothing().when(articleService).deleteById(id);
+        // Mockito.when(articleService.deleteById(id)).thenReturn(void); --> how with mockito?
+        Mockito.when(articleService.existsById(id)).thenReturn(true);
+        willDoNothing().given(articleService).deleteById(id);
+
+        RequestBuilder request = MockMvcRequestBuilders.delete("/api/article/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
+
+        mvc.perform(request)
+            .andExpect(status().isOk());
     }
 
 }
