@@ -1,31 +1,27 @@
 package com.obi.articleservice.control;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
-import org.apache.coyote.Request;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.BDDAssumptions.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,8 +33,6 @@ public class ArticleControllerTest {
     private MockMvc mvc;
     @MockBean
     private ArticleService articleService;
-
-    private List<Article> articleList;
 
     @DisplayName("Test whether dependencies boot and tests run")
     @Test
@@ -84,7 +78,7 @@ public class ArticleControllerTest {
         /* MvcResult result = mvc.perform(get("/api/article")).andReturn();
         result.getResponse().getContentAsString();*/
 
-        Mockito.when(articleService.findAll()).thenReturn(articleList);
+        Mockito.when(articleService.findAll()).thenReturn(new ArrayList<>());
         mvc.perform(request)
                 .andExpect(status().isOk());
     }
@@ -106,7 +100,7 @@ public class ArticleControllerTest {
                 .content(objectMapper.writeValueAsString(articleDto));
 
         mvc.perform(request)
-                .andExpect(status().isOk()) // --> not .isCreated() 201
+                .andExpect(status().isCreated()) // --> not .isCreated() 201
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.internationalArticleNumber").value("123"))
                 .andExpect(jsonPath("$.height").value(2.0))
@@ -127,7 +121,7 @@ public class ArticleControllerTest {
         Mockito.when(articleService.save(article)).thenReturn(article);
 
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity requestUpdate = new HttpEntity(article, headers);
+        HttpEntity<Article> requestUpdate = new HttpEntity<>(article, headers);
 
         RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + id, requestUpdate)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -135,7 +129,7 @@ public class ArticleControllerTest {
 
         mvc.perform(request)
                 .andExpect(status().isOk());
-                //.andExpect(jsonPath("$.id").value(id)); --> response body not defined?
+        //.andExpect(jsonPath("$.id").value(id)); --> response body not defined?
     } // no detailed test results for this test
 
     @Test
@@ -150,7 +144,7 @@ public class ArticleControllerTest {
         Mockito.when(articleService.save(article)).thenReturn(article); // how do I make mockito return HttpStatusCode of ok?
 
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity<Article> requestUpdate = new HttpEntity(article, headers);
+        HttpEntity<Article> requestUpdate = new HttpEntity<>(article, headers);
 
         RequestBuilder request = MockMvcRequestBuilders.put("/api/article/1234", requestUpdate)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -168,15 +162,14 @@ public class ArticleControllerTest {
         Mockito.when(articleService.existsById("404")).thenReturn(false);
 
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity requestUpdate = new HttpEntity(article, headers);
+        HttpEntity<Article> requestUpdate = new HttpEntity<>(article, headers);
 
-        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/404", requestUpdate);
+        MockMvcRequestBuilders.put("/api/article/404", requestUpdate);
     }
 
     @Test
     void delete() throws Exception {
         String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
 
         //doNothing().when(articleService).deleteById(id);
         // Mockito.when(articleService.deleteById(id)).thenReturn(void); --> how with mockito?
@@ -188,14 +181,14 @@ public class ArticleControllerTest {
                 .accept(MediaType.APPLICATION_JSON);
 
         mvc.perform(request)
-            .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
     void deleteNonExistingArticle() throws Exception {
         Mockito.when(articleService.existsById("123")).thenReturn(false);
 
-        RequestBuilder request = MockMvcRequestBuilders.delete("api/article/123");
+        RequestBuilder request = MockMvcRequestBuilders.delete("/api/article/123");
 
         mvc.perform(request)
                 .andExpect(status().isNotFound());

@@ -1,10 +1,8 @@
 package com.obi.articleservice.control;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.repository.ArticleRepository;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,11 +15,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -34,8 +29,9 @@ public class ArticleControllerIntegrationTest {
     private ArticleRepository articleRepository;
 
     @BeforeEach
-    void cleanDB() {
+    void beforeTest() {
         articleRepository.deleteAll();
+        apiUrl = "http://localhost:" + port + "/api/article";
     }
 
     @LocalServerPort
@@ -50,7 +46,7 @@ public class ArticleControllerIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate = new TestRestTemplate();
 
-    private String url = "http://localhost:";
+    private String apiUrl;
 
     /* @DisplayName("Return array of all JSON articles")
     @Test
@@ -82,7 +78,7 @@ public class ArticleControllerIntegrationTest {
 
         // WHEN request article by id
         // GET Request /api/article/${id}
-        ResponseEntity<ArticleDto> response = restTemplate.getForEntity(url + port + "/api/article/" + id, ArticleDto.class);
+        ResponseEntity<ArticleDto> response = restTemplate.getForEntity(apiUrl + "/" + id, ArticleDto.class);
 
         // THEN assert article returned is equal to persisted one
         // assert that persisted article is returned
@@ -98,7 +94,9 @@ public class ArticleControllerIntegrationTest {
 
         // WHEN request article by id
         // GET Request /api/article/${id}
-        ResponseEntity<ArticleDto> response = restTemplate.getForEntity(url + port + "/api/article/1234", ArticleDto.class);
+
+        String url = apiUrl + "/1234";
+        ResponseEntity<ArticleDto> response = restTemplate.getForEntity(url, ArticleDto.class);
 
         // THEN assert HttpStatusCode is equal to 404
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(404));
@@ -113,7 +111,7 @@ public class ArticleControllerIntegrationTest {
 
         // WHEN request all articles
         // GET request /api/article
-        ResponseEntity<ArticleDto[]> response = restTemplate.getForEntity(url + port + "/api/article", ArticleDto[].class);
+        ResponseEntity<ArticleDto[]> response = restTemplate.getForEntity(apiUrl, ArticleDto[].class);
 
         // THEN assert HttpStatusCode is equal to 200
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
@@ -129,7 +127,7 @@ public class ArticleControllerIntegrationTest {
         articleRepository.save(new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0));
         assertThat(articleRepository.count()).isEqualTo(3);
 
-        ResponseEntity<ArticleDto[]> response = restTemplate.getForEntity(url + port + "/api/article", ArticleDto[].class);
+        ResponseEntity<ArticleDto[]> response = restTemplate.getForEntity(apiUrl, ArticleDto[].class);
         ArticleDto[] articleDtos = response.getBody();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
@@ -144,25 +142,25 @@ public class ArticleControllerIntegrationTest {
     void create() { // tests package private by default
         assertThat(articleRepository.count()).isEqualTo(0);
 
-        ArticleDto article = new ArticleDto(null, "123", 20.0, 20.0, 2.0);
+        ArticleDto articleDto = new ArticleDto(null, "123", 20.0, 20.0, 2.0);
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity<ArticleDto> request = new HttpEntity<>(article, headers);
+        HttpEntity<ArticleDto> request = new HttpEntity<>(articleDto, headers);
 
-        ResponseEntity<ArticleDto> response = restTemplate.postForEntity(url + port + "/api/article", request, ArticleDto.class);
+        ResponseEntity<ArticleDto> response = restTemplate.postForEntity(apiUrl, request, ArticleDto.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
-        ArticleDto persistedArticle = response.getBody();
-
-        String generatedId = persistedArticle.getId();
-
-        Optional<Article> foundById = articleRepository.findById(generatedId);
-        assertThat(generatedId).isNotBlank();
-        assertThat(persistedArticle.getInternationalArticleNumber()).isEqualTo(article.getInternationalArticleNumber());
-        assertThat(persistedArticle.getWidth()).isEqualTo(article.getWidth());
-        assertThat(persistedArticle.getLength()).isEqualTo(article.getLength());
-        assertThat(persistedArticle.getHeight()).isEqualTo(article.getHeight());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(201));
 
         assertThat(articleRepository.count()).isEqualTo(1);
+
+        ArticleDto persistedArticle = response.getBody();
+        String generatedId = persistedArticle.getId();
+        assertThat(generatedId).isNotBlank();
+
+        Article foundById = articleRepository.findById(generatedId).orElseThrow();
+        assertThat(foundById.getInternationalArticleNumber()).isEqualTo(articleDto.getInternationalArticleNumber());
+        assertThat(foundById.getWidth()).isEqualTo(articleDto.getWidth());
+        assertThat(foundById.getLength()).isEqualTo(articleDto.getLength());
+        assertThat(foundById.getHeight()).isEqualTo(articleDto.getHeight());
     }
 
     @DisplayName("Ensure invalid article is not created and returns bad request 400")
@@ -172,13 +170,13 @@ public class ArticleControllerIntegrationTest {
 
         HttpEntity<ArticleDto> request = new HttpEntity<>(
                 new ArticleDto(null, null, 20.0, 20.0, 2.0), new HttpHeaders());
-        ResponseEntity<ArticleDto> response = restTemplate.postForEntity(url + port + "/api/article", request, ArticleDto.class);
+        ResponseEntity<ArticleDto> response = restTemplate.postForEntity(apiUrl, request, ArticleDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
         assertThat(articleRepository.count()).isEqualTo(0);
 
         HttpEntity<ArticleDto> request2 = new HttpEntity<>(
                 new ArticleDto(null, "  ", 20.0, 20.0, 2.0), new HttpHeaders());
-        ResponseEntity<ArticleDto> response2 = restTemplate.postForEntity(url + port + "/api/article", request2, ArticleDto.class);
+        ResponseEntity<ArticleDto> response2 = restTemplate.postForEntity(apiUrl, request2, ArticleDto.class);
         assertThat(response2.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
         assertThat(articleRepository.count()).isEqualTo(0);
     }
@@ -189,11 +187,12 @@ public class ArticleControllerIntegrationTest {
     void testPersistInvalidArticles(ArticleDto invalidArticle) { // tests package private by default
         assertThat(articleRepository.count()).isEqualTo(0);
 
-        ParameterizedTypeReference<Map<String, String>> responseType = new ParameterizedTypeReference<>() {};
+        ParameterizedTypeReference<Map<String, String>> responseType = new ParameterizedTypeReference<>() {
+        };
 
         HttpEntity<ArticleDto> request = new HttpEntity<>(invalidArticle, new HttpHeaders());
         //ResponseEntity<ArticleDto> response = restTemplate.postForEntity("http://localhost:" + port + "/api/article",request, ArticleDto.class); --> response is Error Map and not ArticleDto (deserialization error)
-        ResponseEntity<Map<String, String>> response = restTemplate.exchange(url + port + "/api/article", HttpMethod.POST, request, responseType);
+        ResponseEntity<Map<String, String>> response = restTemplate.exchange(apiUrl, HttpMethod.POST, request, responseType);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
         assertThat(articleRepository.count()).isEqualTo(0);
     }
@@ -212,6 +211,7 @@ public class ArticleControllerIntegrationTest {
     @DisplayName("Ensure existing article is updated")
     @Test
     void update() {
+        // GIVEN ensure article exists in DB
         assertThat(articleRepository.count()).isEqualTo(0);
 
         String id = UUID.randomUUID().toString();
@@ -220,18 +220,17 @@ public class ArticleControllerIntegrationTest {
 
         assertThat(articleRepository.count()).isEqualTo(1);
 
-        assertThat(articleRepository.findById(id).get().getId()).isEqualTo(id);
+        // WHEN article is updated via PUT Request
         newArticle.setInternationalArticleNumber("321");
-        articleRepository.save(newArticle);
 
-        // Optional<Article> articleToUpdate = articleRepository.findById(id);
-        // assertThat(articleToUpdate.get().getInternationalArticleNumber()).isEqualTo("321");
-
-        /*HttpHeaders headers = new HttpHeaders();
+        HttpHeaders headers = new HttpHeaders();
         HttpEntity<Article> requestUpdate = new HttpEntity<>(newArticle, headers);
-        ResponseEntity<?> response = restTemplate.exchange(url + port + "/api/article/" + id, HttpMethod.PUT, requestUpdate, Void.class);
+        ResponseEntity<ArticleDto> response = restTemplate.exchange(apiUrl + "/" + id, HttpMethod.PUT, requestUpdate, ArticleDto.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));*/
+        // THEN ensure article is updated in DB
+        Article updatedArticleFromDB = articleRepository.findById(id).orElseThrow();
+        assertThat(updatedArticleFromDB.getInternationalArticleNumber()).isEqualTo("321");
     }
 
     @DisplayName("Ensure update on non-existing article throws 404 not found")
@@ -258,22 +257,25 @@ public class ArticleControllerIntegrationTest {
         assertThat(articleRepository.count()).isEqualTo(1);
 
         HttpEntity<Article> requestDeletion = new HttpEntity<>(article);
-        ResponseEntity<?> response = restTemplate.exchange(url + port + "/api/article/" + id, HttpMethod.DELETE, requestDeletion, Void.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
+        ResponseEntity<Void> response = restTemplate.exchange(apiUrl + "/" + id, HttpMethod.DELETE, requestDeletion, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        assertThat(articleRepository.count()).isEqualTo(0);
     }
 
     @DisplayName("Ensure deletion of non-existing article returns 400 bad request")
     @Test
     void deleteNonExistingArticle() {
+        // GIVEN no articles in DB
         assertThat(articleRepository.count()).isEqualTo(0);
 
-        String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
-        articleRepository.save(article);
+        // WHEN Delete request to non existing id
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Article> requestDeletion = new HttpEntity<>(headers);
 
-        assertThat(articleRepository.count()).isEqualTo(1);
-        HttpEntity<Article> requestDeletion = new HttpEntity<>(article);
-        ResponseEntity<?> response = restTemplate.exchange(url + port + "/api/article/" + 123, HttpMethod.DELETE, requestDeletion, Void.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
+        ResponseEntity<Void> response = restTemplate.exchange(apiUrl+ "/" + UUID.randomUUID().toString(), HttpMethod.DELETE, requestDeletion, Void.class);
+
+        // THEN return 404 not found
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

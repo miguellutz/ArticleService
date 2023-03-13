@@ -29,4 +29,5 @@ public class Article {
     private Double width;
     @NotNull(message = "Length cannot be null")
     private Double length;
+
 }

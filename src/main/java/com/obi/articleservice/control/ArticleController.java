@@ -14,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,7 +66,7 @@ public class ArticleController {
         return errors;
     }*/
 
-    @GetMapping("/light/{id}")
+    /*@GetMapping("/light/{id}")
     public ResponseEntity<? extends Object> findLightArticleById(@PathVariable String id) {        // no need to return ResponseEntity since findAll will always return list even if empty?
         Optional<Article> foundArticle = articleService.findById(id);
         if (foundArticle.isPresent()) {
@@ -77,15 +78,13 @@ public class ArticleController {
                     .notFound()
                     .build();
         }
-
-
-    }
+    }*/
 
     @GetMapping
-    public List<ArticleDto> findAll() {        // no need to return ResponseEntity since findAll will always return list even if empty?
+    public List<ArticleDto> findAll() {
         List<Article> allArticles = articleService.findAll();
         return mapArticlesStream(allArticles);
-    }
+    } // findAll( ) on articleRepository will always return a list --> therefore always returns 200
 
     private List<ArticleDto> mapToDtos(List<Article> allArticles) {
         List<ArticleDto> result = new ArrayList<>();
@@ -133,7 +132,9 @@ public class ArticleController {
         } */ // --> no need for this since passed ArticleDto will always be valid?
         // throw new IllegalStateException("Oh Oh, unexpected error");
         Article newArticle = articleService.save(mapToEntity(articleDto));
-        return ResponseEntity.ok(mapToDto(newArticle));
+        // return ResponseEntity.ok(mapToDto(newArticle));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDto(newArticle));
+        // return ResponseEntity.created(URI.create("http://localhost:8080/api/article/" + newArticle.getId())).build();
     }
 
     /* private static boolean isArticleValid(ArticleDto articleDto) { // in methode auslagern mit opt + cmd + n
@@ -161,25 +162,25 @@ public class ArticleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable(value = "id") String id, Article article) {
-        if (!id.equals(article.getId())) {
+    public ResponseEntity<?> update(@PathVariable(value = "id") String id, @RequestBody ArticleDto articleDto) {
+        if (!id.equals(articleDto.getId())) {
             return ResponseEntity.badRequest().build();
         }
         if (!articleService.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id " + id + " not found");
         }
-        Article savedArticle = articleService.save(article);
+        Article savedArticle = articleService.save(mapToEntity(articleDto));
         return ResponseEntity.ok(savedArticle);
     }
 
     // delete über params oder gepasster id?
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteById(@PathVariable(value = "id") String id) {
+    public ResponseEntity<Void> deleteById(@PathVariable(value = "id") String id) {
         if (!articleService.existsById(id)) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.notFound().build();
         }
         articleService.deleteById(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     //@DeleteMapping
