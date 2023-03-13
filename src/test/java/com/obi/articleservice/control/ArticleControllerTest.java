@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
+import org.apache.coyote.Request;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -12,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -136,6 +134,42 @@ public class ArticleControllerTest {
 
         mvc.perform(request)
                 .andExpect(status().isOk());
+                //.andExpect(jsonPath("$.id").value(id)); --> response body not defined?
+    } // no detailed test results for this test
+
+    @Test
+    void updateWithIdMismatch() throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String id = UUID.randomUUID().toString();
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+
+        Mockito.when(articleService.existsById(id)).thenReturn(true);
+        Mockito.when(articleService.save(article)).thenReturn(article); // how do I make mockito return HttpStatusCode of ok?
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Article> requestUpdate = new HttpEntity(article, headers);
+
+        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/1234", requestUpdate)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(article));
+
+        mvc.perform(request)
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateNonExistingArticle() throws Exception {
+
+        Article article = new Article("1", "123", 2.0, 2.0, 2.0);
+
+        Mockito.when(articleService.existsById("404")).thenReturn(false);
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity requestUpdate = new HttpEntity(article, headers);
+
+        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/404", requestUpdate);
     }
 
     @Test
