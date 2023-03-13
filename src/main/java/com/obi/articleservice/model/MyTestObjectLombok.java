@@ -21,12 +21,12 @@ public class MyTestObjectLombok {
         this.mutableProperty = mutableProperty;
     }
 
-    public MyTestObjectLombok(String property) {
-        this.property = property;
-    }
+    //public MyTestObjectLombok(String property) {
+    //    this.property = property;
+    //}
 
-    public MyTestObjectLombok(String property, String mutableProperty) {    // manual AllArgsConstructor
+    /*public MyTestObjectLombok(String property, String mutableProperty) {    // manual AllArgsConstructor
         this.property = property;
         this.mutableProperty = mutableProperty;
-    }
+    }*/
 }

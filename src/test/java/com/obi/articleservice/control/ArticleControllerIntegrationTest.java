@@ -106,14 +106,14 @@ public class ArticleControllerIntegrationTest {
 
     @DisplayName("Get all articles and return 200 status code even when no articles persisted")
     @Test
-    void findAll() {
+    void findAllEmptyDb() {
         // GIVEN no articles in DB
         // assert DB is empty
         assertThat(articleRepository.count()).isEqualTo(0);
 
         // WHEN request all articles
         // GET request /api/article
-        ResponseEntity<Article[]> response = restTemplate.getForEntity(url + port + "/api/article", Article[].class);
+        ResponseEntity<ArticleDto[]> response = restTemplate.getForEntity(url + port + "/api/article", ArticleDto[].class);
 
         // THEN assert HttpStatusCode is equal to 200
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
@@ -121,21 +121,22 @@ public class ArticleControllerIntegrationTest {
 
     @DisplayName("Get all persisted articles and return 200 status code")
     @Test
-    void findPersistedArticles() {
-        String id = UUID.randomUUID().toString();
-        articleRepository.save(new Article(id, "123", 2.0, 2.0, 2.0));
-        assertThat(articleRepository.count()).isEqualTo(1);
+    void findAll() {
+        // GIVEN
+        assertThat(articleRepository.count()).isEqualTo(0);
+        articleRepository.save(new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0));
+        articleRepository.save(new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0));
+        articleRepository.save(new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0));
+        assertThat(articleRepository.count()).isEqualTo(3);
 
-        ResponseEntity<Article[]> response = restTemplate.getForEntity(url + port + "/api/article", Article[].class);
-        Article[] articles = response.getBody();
-        Article persistedArticle = articles[0];
+        ResponseEntity<ArticleDto[]> response = restTemplate.getForEntity(url + port + "/api/article", ArticleDto[].class);
+        ArticleDto[] articleDtos = response.getBody();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
-        assertThat(persistedArticle.getId()).isEqualTo(id);
-        assertThat(persistedArticle.getInternationalArticleNumber()).isEqualTo("123");
-        assertThat(persistedArticle.getHeight()).isEqualTo(2.0);
-        assertThat(persistedArticle.getWidth()).isEqualTo(2.0);
-        assertThat(persistedArticle.getLength()).isEqualTo(2.0);
+        assertThat(articleDtos.length).isEqualTo(3); // Arrays --> .length, Lists --> .size()
+        /*assertThat(persistedArticle.getId()).isEqualTo(id);
+        assertThat(persistedArticle.getInternationalArticleNumber()).isEqualTo("123");*/
+
     }
 
     @DisplayName("Valid article is created")
@@ -152,7 +153,10 @@ public class ArticleControllerIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
         ArticleDto persistedArticle = response.getBody();
 
-        assertThat(persistedArticle.getId()).isNotBlank();
+        String generatedId = persistedArticle.getId();
+
+        Optional<Article> foundById = articleRepository.findById(generatedId);
+        assertThat(generatedId).isNotBlank();
         assertThat(persistedArticle.getInternationalArticleNumber()).isEqualTo(article.getInternationalArticleNumber());
         assertThat(persistedArticle.getWidth()).isEqualTo(article.getWidth());
         assertThat(persistedArticle.getLength()).isEqualTo(article.getLength());

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
+//@Setter
 //@NoArgsConstructor  // not possible since property is final and needs to be instantiated
 public class MyTestObject {
 

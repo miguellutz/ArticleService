@@ -112,6 +112,7 @@ public class ArticleControllerTest {
                 .andExpect(jsonPath("$.height").value(2.0))
                 .andExpect(jsonPath("$.width").value(2.0))
                 .andExpect(jsonPath("$.height").value(2.0));
+        // { "id": "dasdas", "internationalArticleNumber": 1321321, "height":20.0.....}
     }
 
     @Test

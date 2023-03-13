@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 public class MyTestObjectLombokTest {
 
+    @Test
     void testDefaultConstructor(){
         MyTestObjectLombok myTestObject = new MyTestObjectLombok();
         myTestObject.setMutableProperty("test1");

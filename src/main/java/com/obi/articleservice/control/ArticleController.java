@@ -1,5 +1,7 @@
 package com.obi.articleservice.control;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
@@ -12,10 +14,9 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,6 +25,7 @@ public class ArticleController {
 
                     // replaces constructor and automatically injects dependencies from ArticleService
     private final ArticleService articleService;
+    private final ObjectMapper objectMapper;
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -63,10 +65,49 @@ public class ArticleController {
         return errors;
     }*/
 
+    @GetMapping("/light/{id}")
+    public ResponseEntity<? extends Object> findLightArticleById(@PathVariable String id) {        // no need to return ResponseEntity since findAll will always return list even if empty?
+        Optional<Article> foundArticle = articleService.findById(id);
+        if (foundArticle.isPresent()) {
+            ObjectNode articleLight = objectMapper.createObjectNode();
+            articleLight.put("krasseId", foundArticle.get().getId());
+            // { "krasseId": "daziusdiasdz" }
+        } else {
+            return ResponseEntity
+                    .notFound()
+                    .build();
+        }
+
+
+    }
 
     @GetMapping
-    public List<Article> findAll() {        // no need to return ResponseEntity since findAll will always return list even if empty?
-        return articleService.findAll();
+    public List<ArticleDto> findAll() {        // no need to return ResponseEntity since findAll will always return list even if empty?
+        List<Article> allArticles = articleService.findAll();
+        return mapArticlesStream(allArticles);
+    }
+
+    private List<ArticleDto> mapToDtos(List<Article> allArticles) {
+        List<ArticleDto> result = new ArrayList<>();
+        for (Article article : allArticles) {
+            ArticleDto mappedDto = mapToDto(article);
+            result.add(mappedDto);
+        }
+        return result;
+    }
+    private List<ArticleDto> mapArticlesForEach(List<Article> allArticles) {
+        List<ArticleDto> result = new ArrayList<>();
+        allArticles.forEach( article -> {
+            ArticleDto mappedDto = mapToDto(article);
+            result.add(mappedDto);
+        });
+        return result;
+    }
+
+    private List<ArticleDto> mapArticlesStream(List<Article> allArticles) {
+        return allArticles.stream()
+                .map(article -> mapToDto(article))
+                .collect(Collectors.toList());
     }
 
     // GET /article/uuid-12-udasdasd
@@ -75,7 +116,7 @@ public class ArticleController {
         Optional<Article> foundArticle = articleService.findById(id);
         if (foundArticle.isPresent()) {
             Article article = foundArticle.get();
-            return ResponseEntity.ok(map(article));     // working with ArticleDto to not expose all properties?
+            return ResponseEntity.ok(mapToDto(article));     // working with ArticleDto to not expose all properties?
         } else {
             return ResponseEntity
                     .notFound()
@@ -91,8 +132,8 @@ public class ArticleController {
             return ResponseEntity.badRequest().build();
         } */ // --> no need for this since passed ArticleDto will always be valid?
         // throw new IllegalStateException("Oh Oh, unexpected error");
-        Article newArticle = articleService.save(map(articleDto));
-        return ResponseEntity.ok(map(newArticle));
+        Article newArticle = articleService.save(mapToEntity(articleDto));
+        return ResponseEntity.ok(mapToDto(newArticle));
     }
 
     /* private static boolean isArticleValid(ArticleDto articleDto) { // in methode auslagern mit opt + cmd + n
@@ -105,7 +146,7 @@ public class ArticleController {
                 && articleDto.getHeight() != null;
     }*/
 
-    private Article map(ArticleDto articleDto) {
+    private Article mapToEntity(ArticleDto articleDto) {
         Article article = new Article();
         article.setId(articleDto.getId());
         article.setInternationalArticleNumber(articleDto.getInternationalArticleNumber());
@@ -115,7 +156,7 @@ public class ArticleController {
         return article;
     }
 
-    private ArticleDto map(Article article) {
+    private ArticleDto mapToDto(Article article) {
         return new ArticleDto(article.getId(), article.getInternationalArticleNumber(), article.getHeight(), article.getWidth(), article.getLength());
     }
 
