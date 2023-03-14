@@ -125,7 +125,7 @@ public class ArticleController {
 
 
     @PostMapping
-    public ResponseEntity<ArticleDto> save(@Valid @RequestBody ArticleDto articleDto) { // if not passed validation --> constraint violation exception --> bad request
+    public ResponseEntity<ArticleDto> create(@Valid @RequestBody ArticleDto articleDto) { // if not passed validation --> constraint violation exception --> bad request
         /* boolean articleIsValid = isArticleValid(articleDto); // shift + F6 to rename all instances
         if (!articleIsValid) { // blank considers spaces "   "
             return ResponseEntity.badRequest().build();

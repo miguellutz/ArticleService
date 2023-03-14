@@ -10,8 +10,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -21,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -31,6 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ArticleControllerTest {
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
     @MockBean
     private ArticleService articleService;
 
@@ -78,22 +80,24 @@ public class ArticleControllerTest {
         /* MvcResult result = mvc.perform(get("/api/article")).andReturn();
         result.getResponse().getContentAsString();*/
 
-        Mockito.when(articleService.findAll()).thenReturn(new ArrayList<>());
+        ArrayList<Article> articles = new ArrayList<>();
+        articles.add(new Article(UUID.randomUUID().toString(), "123", 20.0, 2.0, 2.0));
+        Mockito.when(articleService.findAll()).thenReturn(articles);
         mvc.perform(request)
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value((1)));
     }
 
     @Test
-    void save() throws Exception {
+    void create() throws Exception {
+        // input in controller
+        ArticleDto articleDto = new ArticleDto(null, "123", 2.0, 2.0, 2.0);
+        // mapped to entity for Service
+        Article mappedToEntity = new Article(null, "123", 2.0, 2.0, 2.0);
+        // service returns entity with new generated ID
+        Article mockedPersistedArticle = new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        String id = UUID.randomUUID().toString();
-        ArticleDto articleDto = new ArticleDto(id, "123", 2.0, 2.0, 2.0);
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
-
-
-        Mockito.when(articleService.save(article)).thenReturn(article);
+        Mockito.when(articleService.save(mappedToEntity)).thenReturn(mockedPersistedArticle);
 
         RequestBuilder request = MockMvcRequestBuilders.post("/api/article")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,18 +105,24 @@ public class ArticleControllerTest {
 
         mvc.perform(request)
                 .andExpect(status().isCreated()) // --> not .isCreated() 201
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.internationalArticleNumber").value("123"))
-                .andExpect(jsonPath("$.height").value(2.0))
-                .andExpect(jsonPath("$.width").value(2.0))
-                .andExpect(jsonPath("$.height").value(2.0));
+                .andExpect(jsonPath("$.id").value(mockedPersistedArticle.getId()))
+                .andExpect(jsonPath("$.internationalArticleNumber").value(mockedPersistedArticle.getInternationalArticleNumber()))
+                .andExpect(jsonPath("$.height").value(mockedPersistedArticle.getHeight()))
+                .andExpect(jsonPath("$.width").value(mockedPersistedArticle.getWidth()))
+                .andExpect(jsonPath("$.height").value(mockedPersistedArticle.getLength()));
         // { "id": "dasdas", "internationalArticleNumber": 1321321, "height":20.0.....}
+        // $.id -> {"id": "238746283746"}
+    }
+
+    // TODO
+    @DisplayName("Create new article with an id should return bad request")
+    @Test
+    void createWithId() {
+
     }
 
     @Test
     void update() throws Exception {
-
-        ObjectMapper objectMapper = new ObjectMapper();
 
         String id = UUID.randomUUID().toString();
         Article article = new Article(id, "123", 2.0, 2.0, 2.0);
@@ -120,33 +130,23 @@ public class ArticleControllerTest {
         Mockito.when(articleService.existsById(id)).thenReturn(true);
         Mockito.when(articleService.save(article)).thenReturn(article);
 
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity<Article> requestUpdate = new HttpEntity<>(article, headers);
-
-        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + id, requestUpdate)
+        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(article));
 
         mvc.perform(request)
                 .andExpect(status().isOk());
         //.andExpect(jsonPath("$.id").value(id)); --> response body not defined?
-    } // no detailed test results for this test
+    }
 
     @Test
     void updateWithIdMismatch() throws Exception {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        Article article = new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0);
 
-        Mockito.when(articleService.existsById(id)).thenReturn(true);
-        Mockito.when(articleService.save(article)).thenReturn(article); // how do I make mockito return HttpStatusCode of ok?
-
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity<Article> requestUpdate = new HttpEntity<>(article, headers);
-
-        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/1234", requestUpdate)
+        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(article));
 
@@ -157,14 +157,17 @@ public class ArticleControllerTest {
     @Test
     void updateNonExistingArticle() throws Exception {
 
-        Article article = new Article("1", "123", 2.0, 2.0, 2.0);
+        Mockito.when(articleService.existsById(any())).thenReturn(false);
 
-        Mockito.when(articleService.existsById("404")).thenReturn(false);
+        String id = UUID.randomUUID().toString();
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
 
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity<Article> requestUpdate = new HttpEntity<>(article, headers);
+        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/"+id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(article));
 
-        MockMvcRequestBuilders.put("/api/article/404", requestUpdate);
+        mvc.perform(request)
+                .andExpect(status().isNotFound());
     }
 
     @Test

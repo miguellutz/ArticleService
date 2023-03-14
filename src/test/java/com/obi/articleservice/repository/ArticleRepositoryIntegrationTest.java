@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;
 import java.util.UUID;
-
+// TODO Use DataJpaTest
 @SpringBootTest
 public class ArticleRepositoryIntegrationTest {
     @Autowired      // is dependent on ArticleRepository --> needs to be injected by Spring
