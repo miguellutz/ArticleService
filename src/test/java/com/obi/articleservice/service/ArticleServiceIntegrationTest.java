@@ -13,7 +13,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @SpringBootTest     // for integration tests (loads entire spring context)
@@ -38,8 +37,8 @@ class ArticleServiceIntegrationTest {
         List<Article> initialFoundArticles = articleService.findAll();
         Assertions.assertThat(initialFoundArticles.size()).isEqualTo(0);
 
-        articleService.save(new Article("1", "123", 1.0, 1.0, 1.0));
-        articleService.save(new Article("2", "123", 1.0, 1.0, 1.0));
+        articleService.create(new Article(null, "123", 1.0, 1.0, 1.0));
+        articleService.create(new Article(null, "123", 1.0, 1.0, 1.0));
 
 
         // WHEN
@@ -54,7 +53,7 @@ class ArticleServiceIntegrationTest {
     @DisplayName("Ensure new article got new id")
     @Test
     void saveNewArticle() {
-        Article savedArticle = articleService.save(new Article(null, "123", 1.0, 1.0, 1.0));
+        Article savedArticle = articleService.create(new Article(null, "123", 1.0, 1.0, 1.0));
         assertThat(savedArticle.getId()).isNotBlank();
     }
 
@@ -62,12 +61,11 @@ class ArticleServiceIntegrationTest {
     @Test
     void updateArticle() {
         // GIVEN article exists in DB
-        String id = UUID.randomUUID().toString();
-        Article existingArticle = articleService.save(new Article(id, "123", 5.0, 5.0, 5.0));
+        Article existingArticle = articleService.create(new Article(null, "123", 5.0, 5.0, 5.0));
 
         // WHEN article is updated
         existingArticle.setInternationalArticleNumber("202");
-        Article updatedArticle = articleService.save(existingArticle);
+        Article updatedArticle = articleService.update(existingArticle);
 
         // THEN expect changes in DB
         assertThat(updatedArticle.getInternationalArticleNumber()).isEqualTo("202");
@@ -76,19 +74,19 @@ class ArticleServiceIntegrationTest {
     @DisplayName("Existing article is deleted after delete is called")
     @Test
     void deleteArticle() {
-        String id = UUID.randomUUID().toString();
-        articleService.save(new Article(id, "123", 6.0, 6.0, 6.0));
+        Article savedArticle = articleService.create(new Article(null, "123", 6.0, 6.0, 6.0));
 
-        articleService.deleteById(id);
+        articleService.deleteById(savedArticle.getId());
 
-        assertThat(articleService.findById(id)).isNotPresent();
+        assertThat(articleService.findById(savedArticle.getId())).isNotPresent();
     }
 
     @DisplayName("Ensure that exception is thrown on not existing deletion")
     @Test
     void deleteNotExistingArticle() {
+        assertThat(articleRepository.count()).isEqualTo(0);
         org.junit.jupiter.api.Assertions.assertThrows(
-                EmptyResultDataAccessException.class,
+                IllegalStateException.class,
                 () -> articleService.deleteById(UUID.randomUUID().toString()));
     }
 }

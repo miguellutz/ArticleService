@@ -2,6 +2,7 @@ package com.obi.articleservice.service;
 
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.repository.ArticleRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -65,25 +66,27 @@ public class ArticleServiceTest {
     @DisplayName("Return empty optional when searching for non-existing id")
     @Test
     void findByNonExistingId() {
+        // GIVEN repository always returns empty optional
         Mockito.when(articleRepository.findById(anyString())).thenReturn(Optional.empty());
 
-        assertThat(articleService.findById("123")).isEqualTo(Optional.empty());
+        // WHEN THEN searching by id service returns empty optional as well
+        assertThat(articleService.findById(anyString())).isEqualTo(Optional.empty());
         verify(articleRepository, times(1)).findById(anyString());
         verifyNoMoreInteractions(articleRepository);
     }
 
     @DisplayName("Return article when saving existing article")
     @Test
-    void save() {
+    void create() {
 
-        String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        // GIVEN articleRepository successfully saves existing article
+        Article article = new Article(null, "123", 2.0, 2.0, 2.0);
         Mockito.when(articleRepository.save(article)).thenReturn(article);
 
-        Article savedArticle = articleService.save(article);
+        Article savedArticle = articleService.create(article);
 
         assertThat(savedArticle).usingRecursiveComparison().isEqualTo(article);
-        assertThat(savedArticle.getId()).isEqualTo(id);
+        assertThat(savedArticle.getId()).isEqualTo(savedArticle.getId());
 
         verify(articleRepository, times(1)).save(any(Article.class));
         verifyNoMoreInteractions(articleRepository);
@@ -91,21 +94,44 @@ public class ArticleServiceTest {
 
     @DisplayName("Return article with new id when saving a new article")
     @Test
-    void saveNewArticle() {
-        Article article = new Article(null, "123", 2.0, 2.0, 2.0);
-        Mockito.when(articleRepository.save(article)).thenReturn(article);
+    void update() {
+        // GIVEN article is already created
+        Article newArticle = new Article(null, "123", 2.0, 2.0, 2.0);
+        Mockito.when(articleRepository.save(newArticle)).thenReturn(newArticle);
+        Article createdArticle = articleService.create(newArticle);
 
-        Article savedArticle = articleService.save(article);
+        // WHEN updating article
+        createdArticle.setHeight(123123.0);
+        Mockito.when(articleRepository.save(createdArticle)).thenReturn(createdArticle);
+        Article savedArticle = articleService.update(createdArticle);
 
-        assertThat(savedArticle.getId()).isNotNull();
+        // THEN ensure article has been updated
+        assertThat(savedArticle.getHeight()).isNotNull();
+        assertThat(savedArticle.getHeight()).isEqualTo(123123.0);
     }
 
     @DisplayName("Return nothing when article is deleted")
     @Test
     void deleteById() {
-        doNothing().when(articleRepository).deleteById(anyString());
-        articleService.deleteById("123");
-        verify(articleRepository, times(1)).deleteById("123");
+        String id = "123";
+        doNothing().when(articleRepository).deleteById(id);
+        Mockito.when(articleRepository.existsById(id)).thenReturn(true);
+
+        articleService.deleteById(id);
+        verify(articleRepository, times(1)).deleteById(id);
+        verify(articleRepository, times(1)).existsById(id);
+        verifyNoMoreInteractions(articleRepository);
+    }
+
+    @DisplayName("Throw illegal state exception when non-existing article is deleted")
+    @Test
+    void deleteNonExistingArticle() {
+        String id = "123";
+        Mockito.when(articleRepository.existsById(id)).thenReturn(false);
+
+        Assertions.assertThrows(IllegalStateException.class, () -> articleService.deleteById(id));
+
+        verify(articleRepository, times(1)).existsById(id);
         verifyNoMoreInteractions(articleRepository);
     }
 }

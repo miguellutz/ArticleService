@@ -1,7 +1,6 @@
 package com.obi.articleservice.control;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
@@ -14,10 +13,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @RestController
@@ -131,7 +128,7 @@ public class ArticleController {
             return ResponseEntity.badRequest().build();
         } */ // --> no need for this since passed ArticleDto will always be valid?
         // throw new IllegalStateException("Oh Oh, unexpected error");
-        Article newArticle = articleService.save(mapToEntity(articleDto));
+        Article newArticle = articleService.create(mapToEntity(articleDto));
         // return ResponseEntity.ok(mapToDto(newArticle));
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToDto(newArticle));
         // return ResponseEntity.created(URI.create("http://localhost:8080/api/article/" + newArticle.getId())).build();
@@ -169,7 +166,7 @@ public class ArticleController {
         if (!articleService.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id " + id + " not found");
         }
-        Article savedArticle = articleService.save(mapToEntity(articleDto));
+        Article savedArticle = articleService.update(mapToEntity(articleDto));
         return ResponseEntity.ok(savedArticle);
     }
 

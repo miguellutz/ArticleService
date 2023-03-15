@@ -6,7 +6,6 @@ import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -98,7 +97,7 @@ public class ArticleControllerTest {
         // service returns entity with new generated ID
         Article mockedPersistedArticle = new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0);
 
-        Mockito.when(articleService.save(mappedToEntity)).thenReturn(mockedPersistedArticle);
+        Mockito.when(articleService.create(mappedToEntity)).thenReturn(mockedPersistedArticle);
 
         RequestBuilder request = MockMvcRequestBuilders.post("/api/article")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,7 +128,7 @@ public class ArticleControllerTest {
         Article article = new Article(id, "123", 2.0, 2.0, 2.0);
 
         Mockito.when(articleService.existsById(id)).thenReturn(true);
-        Mockito.when(articleService.save(article)).thenReturn(article);
+        Mockito.when(articleService.create(article)).thenReturn(article);
 
         RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + id)
                 .contentType(MediaType.APPLICATION_JSON)

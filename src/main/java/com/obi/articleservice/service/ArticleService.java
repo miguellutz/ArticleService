@@ -4,9 +4,7 @@ import com.obi.articleservice.model.Article;
 import com.obi.articleservice.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,9 +32,17 @@ public class ArticleService {       // bean: class with business logic (spring /
         return articleRepository.findById(id);
     }
 
-    public Article save(Article article) {
-        if(article.getId()==null || article.getId().isBlank()){
-            article.setId(UUID.randomUUID().toString());
+    public Article create(Article article) {
+        if(article.getId() != null) {
+            throw new IllegalArgumentException("id must be null on creation");
+        }
+        article.setId(UUID.randomUUID().toString());
+        return articleRepository.save(article);
+    }
+
+    public Article update(Article article) {
+        if(article.getId() == null || article.getId().isBlank()){
+            throw new IllegalArgumentException("id must not be null on update");
         }
         return articleRepository.save(article);
     }
@@ -47,6 +53,9 @@ public class ArticleService {       // bean: class with business logic (spring /
 
     // Wie kann ich String mit message returnen und gleichzeitig aber auch gelöschtes Objekt?
     public void deleteById(String id){
+        if(!existsById(id)) {
+            throw new IllegalStateException("Non existing article cannot be deleted");
+        }
        articleRepository.deleteById(id);
     }
 
