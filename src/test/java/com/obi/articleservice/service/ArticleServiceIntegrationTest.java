@@ -90,7 +90,5 @@ class ArticleServiceIntegrationTest {
         org.junit.jupiter.api.Assertions.assertThrows(
                 EmptyResultDataAccessException.class,
                 () -> articleService.deleteById(UUID.randomUUID().toString()));
-
-
     }
 }

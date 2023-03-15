@@ -30,15 +30,15 @@ public class ArticleService {       // bean: class with business logic (spring /
         return articleRepository.findAll();
     }
 
+    public Optional<Article> findById(String id){
+        return articleRepository.findById(id);
+    }
+
     public Article save(Article article) {
         if(article.getId()==null || article.getId().isBlank()){
             article.setId(UUID.randomUUID().toString());
         }
         return articleRepository.save(article);
-    }
-
-    public Optional<Article> findById(String id){
-        return articleRepository.findById(id);
     }
 
     public void delete(Article article){
