@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
@@ -16,6 +15,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class ArticleServiceTest {
@@ -40,7 +41,9 @@ public class ArticleServiceTest {
         List<Article> articles = articleService.findAll();
 
         // THEN return list with all articles
-        assertThat(articleService.findAll()).hasSize(3);
+        assertThat(articles).hasSize(3);
+        verify(articleRepository, times(1)).findAll();
+        verifyNoMoreInteractions(articleRepository);
     }
 
     @DisplayName("Return individual article")
@@ -51,21 +54,58 @@ public class ArticleServiceTest {
         Article article = new Article(id, "123", 2.0, 2.0, 2.0);
 
         // WHEN article is searched by id
-        Mockito.when(articleRepository.findById(id)).thenReturn(Optional.of(article));
+        Mockito.when(articleRepository.findById(anyString())).thenReturn(Optional.of(article));
 
         // THEN return optional of found article
-        assertThat(articleService.findById(id)).isEqualTo(Optional.of(article));
+        assertThat(articleService.findById(id)).usingRecursiveComparison().isEqualTo(Optional.of(article));
+        verify(articleRepository, times(1)).findById(anyString());
+        verifyNoMoreInteractions(articleRepository);
     }
 
     @DisplayName("Return empty optional when searching for non-existing id")
     @Test
     void findByNonExistingId() {
-        Mockito.when(articleRepository.findById("123")).thenReturn(Optional.empty());
+        Mockito.when(articleRepository.findById(anyString())).thenReturn(Optional.empty());
 
         assertThat(articleService.findById("123")).isEqualTo(Optional.empty());
+        verify(articleRepository, times(1)).findById(anyString());
+        verifyNoMoreInteractions(articleRepository);
     }
 
+    @DisplayName("Return article when saving existing article")
+    @Test
+    void save() {
 
+        String id = UUID.randomUUID().toString();
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        Mockito.when(articleRepository.save(article)).thenReturn(article);
 
+        Article savedArticle = articleService.save(article);
 
+        assertThat(savedArticle).usingRecursiveComparison().isEqualTo(article);
+        assertThat(savedArticle.getId()).isEqualTo(id);
+
+        verify(articleRepository, times(1)).save(any(Article.class));
+        verifyNoMoreInteractions(articleRepository);
+    }
+
+    @DisplayName("Return article with new id when saving a new article")
+    @Test
+    void saveNewArticle() {
+        Article article = new Article(null, "123", 2.0, 2.0, 2.0);
+        Mockito.when(articleRepository.save(article)).thenReturn(article);
+
+        Article savedArticle = articleService.save(article);
+
+        assertThat(savedArticle.getId()).isNotNull();
+    }
+
+    @DisplayName("Return nothing when article is deleted")
+    @Test
+    void deleteById() {
+        doNothing().when(articleRepository).deleteById(anyString());
+        articleService.deleteById("123");
+        verify(articleRepository, times(1)).deleteById("123");
+        verifyNoMoreInteractions(articleRepository);
+    }
 }
