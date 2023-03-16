@@ -4,19 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table
 @Getter
 @Setter
+@RequiredArgsConstructor
 // @NoArgsConstructor (Default Constructor) --> as soon as new constructor added need to add manually
 public class CountryArticleDto {
-
-    @Id
-    private String id;
-    private String title;
-    private Boolean active; // work with classes instead of primitives to prevent default value
-
-
+    private final String title;
+    private final Boolean active; // work with classes instead of primitives to prevent default value
 }

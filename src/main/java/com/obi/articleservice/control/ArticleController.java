@@ -3,8 +3,11 @@ package com.obi.articleservice.control;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obi.articleservice.dto.ArticleCreationDto;
 import com.obi.articleservice.dto.ArticleDto;
+import com.obi.articleservice.dto.CountryArticleDto;
 import com.obi.articleservice.model.Article;
+import com.obi.articleservice.model.CountryArticle;
 import com.obi.articleservice.service.ArticleService;
+import com.obi.articleservice.util.ArticleMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -87,7 +90,7 @@ public class ArticleController {
     private List<ArticleDto> mapToDtos(List<Article> allArticles) {
         List<ArticleDto> result = new ArrayList<>();
         for (Article article : allArticles) {
-            ArticleDto mappedDto = mapToDto(article);
+            ArticleDto mappedDto = ArticleMapper.mapToDto(article);
             result.add(mappedDto);
         }
         return result;
@@ -95,7 +98,7 @@ public class ArticleController {
     private List<ArticleDto> mapArticlesForEach(List<Article> allArticles) {
         List<ArticleDto> result = new ArrayList<>();
         allArticles.forEach( article -> {
-            ArticleDto mappedDto = mapToDto(article);
+            ArticleDto mappedDto = ArticleMapper.mapToDto(article);
             result.add(mappedDto);
         });
         return result;
@@ -103,7 +106,7 @@ public class ArticleController {
 
     private List<ArticleDto> mapArticlesStream(List<Article> allArticles) {
         return allArticles.stream()
-                .map(article -> mapToDto(article))
+                .map(article -> ArticleMapper.mapToDto(article))
                 .collect(Collectors.toList());
     }
 
@@ -113,7 +116,7 @@ public class ArticleController {
         Optional<Article> foundArticle = articleService.findById(id);
         if (foundArticle.isPresent()) {
             Article article = foundArticle.get();
-            return ResponseEntity.ok(mapToDto(article));     // working with ArticleDto to not expose all properties?
+            return ResponseEntity.ok(ArticleMapper.mapToDto(article));     // working with ArticleDto to not expose all properties?
         } else {
             return ResponseEntity
                     .notFound()
@@ -129,9 +132,9 @@ public class ArticleController {
             return ResponseEntity.badRequest().build();
         } */ // --> no need for this since passed ArticleDto will always be valid?
         // throw new IllegalStateException("Oh Oh, unexpected error");
-        Article newArticle = articleService.create(mapToEntity(articleCreationDto));
+        Article newArticle = articleService.create(ArticleMapper.mapToEntity(articleCreationDto));
         // return ResponseEntity.ok(mapToDto(newArticle));
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDto(newArticle));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ArticleMapper.mapToDto(newArticle));
         // return ResponseEntity.created(URI.create("http://localhost:8080/api/article/" + newArticle.getId())).build();
     }
 
@@ -145,28 +148,7 @@ public class ArticleController {
                 && articleDto.getHeight() != null;
     }*/
 
-    private Article mapToEntity(ArticleDto articleDto) {
-        Article article = new Article();
-        article.setId(articleDto.getId());
-        article.setInternationalArticleNumber(articleDto.getInternationalArticleNumber());
-        article.setWidth(articleDto.getWidth());
-        article.setLength(articleDto.getLength());
-        article.setHeight(articleDto.getHeight());
-        return article;
-    }
 
-    private Article mapToEntity(ArticleCreationDto articleCreationDto) {
-        Article article = new Article();
-        article.setInternationalArticleNumber(articleCreationDto.getInternationalArticleNumber());
-        article.setWidth(articleCreationDto.getWidth());
-        article.setLength(articleCreationDto.getLength());
-        article.setHeight(articleCreationDto.getHeight());
-        return article;
-    }
-
-    private ArticleDto mapToDto(Article article) {
-        return new ArticleDto(article.getId(), article.getInternationalArticleNumber(), article.getHeight(), article.getWidth(), article.getLength());
-    }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable(value = "id") String id, @RequestBody ArticleDto articleDto) {
@@ -176,7 +158,7 @@ public class ArticleController {
         if (!articleService.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id " + id + " not found");
         }
-        Article savedArticle = articleService.update(mapToEntity(articleDto));
+        Article savedArticle = articleService.update(ArticleMapper.mapToEntity(articleDto));
         return ResponseEntity.ok(savedArticle);
     }
 

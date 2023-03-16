@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+import java.util.List;
+
 @ToString
 @Getter
 @RequiredArgsConstructor
@@ -18,4 +20,6 @@ public class ArticleCreationDto { // no need for noargsconstructor, possibility 
     private final Double width;
     @NotNull(message = "Length cannot be null")
     private final Double length;
+
+    private final List<CountryArticleDto> countryArticles;
 }

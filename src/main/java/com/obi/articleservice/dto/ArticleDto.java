@@ -1,14 +1,18 @@
 package com.obi.articleservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.obi.articleservice.model.CountryArticle;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.Accessors;
+
+import java.util.List;
 
 @ToString
 @Getter
@@ -23,4 +27,6 @@ public class ArticleDto { // no need for noargsconstructor, possibility to hide 
     private final Double width;
     @NotNull(message = "Length cannot be null")
     private final Double length;
+
+    private final List<CountryArticleDto> countryArticles;
 }
