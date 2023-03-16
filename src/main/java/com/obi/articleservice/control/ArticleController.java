@@ -1,6 +1,7 @@
 package com.obi.articleservice.control;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.obi.articleservice.dto.ArticleCreationDto;
 import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
@@ -122,13 +123,13 @@ public class ArticleController {
 
 
     @PostMapping
-    public ResponseEntity<ArticleDto> create(@Valid @RequestBody ArticleDto articleDto) { // if not passed validation --> constraint violation exception --> bad request
-        /* boolean articleIsValid = isArticleValid(articleDto); // shift + F6 to rename all instances
+    public ResponseEntity<ArticleDto> create(@Valid @RequestBody ArticleCreationDto articleCreationDto) { // if not passed validation --> constraint violation exception --> bad request
+        /* boolean articleIsValid = isArticleValid(articleCreationDto); // shift + F6 to rename all instances
         if (!articleIsValid) { // blank considers spaces "   "
             return ResponseEntity.badRequest().build();
         } */ // --> no need for this since passed ArticleDto will always be valid?
         // throw new IllegalStateException("Oh Oh, unexpected error");
-        Article newArticle = articleService.create(mapToEntity(articleDto));
+        Article newArticle = articleService.create(mapToEntity(articleCreationDto));
         // return ResponseEntity.ok(mapToDto(newArticle));
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToDto(newArticle));
         // return ResponseEntity.created(URI.create("http://localhost:8080/api/article/" + newArticle.getId())).build();
@@ -151,6 +152,15 @@ public class ArticleController {
         article.setWidth(articleDto.getWidth());
         article.setLength(articleDto.getLength());
         article.setHeight(articleDto.getHeight());
+        return article;
+    }
+
+    private Article mapToEntity(ArticleCreationDto articleCreationDto) {
+        Article article = new Article();
+        article.setInternationalArticleNumber(articleCreationDto.getInternationalArticleNumber());
+        article.setWidth(articleCreationDto.getWidth());
+        article.setLength(articleCreationDto.getLength());
+        article.setHeight(articleCreationDto.getHeight());
         return article;
     }
 

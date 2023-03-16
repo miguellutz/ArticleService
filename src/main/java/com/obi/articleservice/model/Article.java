@@ -2,6 +2,7 @@ package com.obi.articleservice.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -29,5 +30,8 @@ public class Article {
     private Double width;
     @NotNull(message = "Length cannot be null")
     private Double length;
+
+    @OneToMany(mappedBy = "article")
+    private List<CountryArticle> countryArticles;
 
 }

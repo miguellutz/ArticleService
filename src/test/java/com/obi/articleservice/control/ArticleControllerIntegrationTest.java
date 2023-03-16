@@ -236,13 +236,37 @@ public class ArticleControllerIntegrationTest {
     @DisplayName("Ensure update on non-existing article throws 404 not found")
     @Test
     void updateNonExistingArticle() {
+        // GIVEN no articles in DB
+        assertThat(articleRepository.count()).isEqualTo(0);
 
+        // WHEN  non existing article is updated
+        ArticleDto articleDto = new ArticleDto("123", "123", 2.0, 2.0, 2.0);
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<ArticleDto> requestUpdate = new HttpEntity<>(articleDto, headers);
+        ResponseEntity<?> response = restTemplate.exchange(apiUrl + "/123", HttpMethod.PUT, requestUpdate, Void.class);
+
+        // THEN return 404 not found
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @DisplayName("Ensure update on article with other id than path throws 400 bad request")
     @Test
     void updateIdMismatchArticle() {
+        // GIVEN article in DB
+        Article article = new Article("123", "123", 2.0, 2.0, 2.0);
+        articleRepository.save(article);
+        assertThat(articleRepository.count()).isEqualTo(1);
 
+        // WHEN update on article with different path
+        Article foundArticle = articleRepository.findById("123").get();
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Article> requestUpdate = new HttpEntity<>(foundArticle, headers);
+        ResponseEntity<?> response = restTemplate.exchange(apiUrl + "1", HttpMethod.PUT, requestUpdate, Void.class);
+
+        // THEN return bad request
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @DisplayName("Ensure deletion of article returns 200")
