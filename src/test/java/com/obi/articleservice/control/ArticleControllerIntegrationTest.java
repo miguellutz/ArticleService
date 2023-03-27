@@ -77,7 +77,7 @@ public class ArticleControllerIntegrationTest {
 
         // write one article in DB
         String id = UUID.randomUUID().toString();
-        articleRepository.save(new Article(id, "123", 2.0, 2.0, 2.0));
+        articleRepository.save(TestDataUtil.createArticle());
 
         // ensure DB count is 1
         assertThat(articleRepository.count()).isEqualTo(1);
@@ -151,12 +151,9 @@ public class ArticleControllerIntegrationTest {
     @Test
     void create() { // tests package private by default
         assertThat(articleRepository.count()).isEqualTo(0);
-
-        ArticleDto articleDto = new ArticleDto(null, "123", 20.0, 20.0, 2.0);
-
         List<CountryArticleDto> countryArticleDtos = new ArrayList<>();
         countryArticleDtos.add(new CountryArticleDto("DE", "Kovalex", false));
-        ArticleDto articleDtos = new ArticleDto(null, "123", 2.0, 2.0, 2.0, countryArticleDtos);
+        ArticleDto articleDto = new ArticleDto(null, "123", 2.0, 2.0, 2.0, countryArticleDtos);
 
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<ArticleDto> request = new HttpEntity<>(articleDto, headers);
@@ -181,17 +178,29 @@ public class ArticleControllerIntegrationTest {
     @DisplayName("Ensure invalid article is not created and returns bad request 400")
     @Test
     void createInvalidArticle() { // tests package private by default
+        // GIVEN invalid article with internationalArticleNumber of null
         assertThat(articleRepository.count()).isEqualTo(0);
+        List<CountryArticleDto> countryArticleDtos = new ArrayList<>();
+        countryArticleDtos.add(new CountryArticleDto("DE", "Kovalex", false));
 
         HttpEntity<ArticleDto> request = new HttpEntity<>(
-                new ArticleDto(null, null, 20.0, 20.0, 2.0), new HttpHeaders());
+                new ArticleDto(null, null, 20.0, 20.0, 2.0, countryArticleDtos), new HttpHeaders());
+
+        // WHEN post invalid article
         ResponseEntity<ArticleDto> response = restTemplate.postForEntity(apiUrl, request, ArticleDto.class);
+
+        // THEN return 400 bad request and do not persist article in DB
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
         assertThat(articleRepository.count()).isEqualTo(0);
 
+        // GIVEN invalid article with empty internationalArticleNumber
         HttpEntity<ArticleDto> request2 = new HttpEntity<>(
-                new ArticleDto(null, "  ", 20.0, 20.0, 2.0), new HttpHeaders());
+                new ArticleDto(null, "  ", 20.0, 20.0, 2.0, countryArticleDtos), new HttpHeaders());
+
+        // WHEN post invalid article
         ResponseEntity<ArticleDto> response2 = restTemplate.postForEntity(apiUrl, request2, ArticleDto.class);
+
+        // THEN return 400 bad request and do not persist article in DB
         assertThat(response2.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(400));
         assertThat(articleRepository.count()).isEqualTo(0);
     }
@@ -213,13 +222,17 @@ public class ArticleControllerIntegrationTest {
     }
 
     public static Stream<Arguments> testWithInvalidArticles() {
+
+        List<CountryArticleDto> countryArticleDtos = new ArrayList<>();
+        countryArticleDtos.add(new CountryArticleDto("DE", "Kovalex", false));
+
         return Stream.of(
-                Arguments.of(new ArticleDto(null, null, 20.0, 20.0, 2.0)),
-                Arguments.of(new ArticleDto(null, "", 20.0, 20.0, 2.0)),
-                Arguments.of(new ArticleDto(null, " ", 20.0, 20.0, 2.0)),
-                Arguments.of(new ArticleDto(null, "123", null, 20.0, 2.0)),
-                Arguments.of(new ArticleDto(null, "123", 20.0, null, 2.0)),
-                Arguments.of(new ArticleDto(null, "123", 20.0, 20.0, null))
+                Arguments.of(new ArticleDto(null, null, 20.0, 20.0, 2.0, countryArticleDtos)),
+                Arguments.of(new ArticleDto(null, "", 20.0, 20.0, 2.0, countryArticleDtos)),
+                Arguments.of(new ArticleDto(null, " ", 20.0, 20.0, 2.0, countryArticleDtos)),
+                Arguments.of(new ArticleDto(null, "123", null, 20.0, 2.0, countryArticleDtos)),
+                Arguments.of(new ArticleDto(null, "123", 20.0, null, 2.0, countryArticleDtos)),
+                Arguments.of(new ArticleDto(null, "123", 20.0, 20.0, null, countryArticleDtos))
         );
     }
 
@@ -236,12 +249,11 @@ public class ArticleControllerIntegrationTest {
         newArticle.setId(id);
         //create and set countryArticles
         List<CountryArticle> countryArticles = new ArrayList<>();
-        countryArticles.add(new CountryArticle(new CountryArticleId(null, "DE"), "DE", true, newArticle);
+        countryArticles.add(new CountryArticle(new CountryArticleId(null, "DE"), "Kovalex", true, newArticle));
         countryArticles.add(new CountryArticle());
         newArticle.setCountryArticles(countryArticles);
         // set internetionalArticleNumger width
         //, "123", 2.0, 2.0, 2.0, countryArticles
-
 
         articleRepository.save(newArticle);
 
@@ -267,7 +279,7 @@ public class ArticleControllerIntegrationTest {
         assertThat(articleRepository.count()).isEqualTo(0);
 
         // WHEN  non existing article is updated
-        ArticleDto articleDto = new ArticleDto("123", "123", 2.0, 2.0, 2.0);
+        ArticleDto articleDto = new ArticleDto("123", "123", 2.0, 2.0, 2.0, new ArrayList<>());
 
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<ArticleDto> requestUpdate = new HttpEntity<>(articleDto, headers);
@@ -281,7 +293,7 @@ public class ArticleControllerIntegrationTest {
     @Test
     void updateIdMismatchArticle() {
         // GIVEN article in DB
-        Article article = new Article("123", "123", 2.0, 2.0, 2.0);
+        Article article = TestDataUtil.createArticle();
         articleRepository.save(article);
         assertThat(articleRepository.count()).isEqualTo(1);
 
@@ -302,7 +314,7 @@ public class ArticleControllerIntegrationTest {
         assertThat(articleRepository.count()).isEqualTo(0);
 
         String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0, new ArrayList<>());
         articleRepository.save(article);
 
         assertThat(articleRepository.count()).isEqualTo(1);
