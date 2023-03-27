@@ -15,6 +15,7 @@ import java.util.List;
 @Data      // für standard plain old java objects (pojos) --> getter, setter, noargs... (von Lombok)
 @Accessors(chain = true)
 @NoArgsConstructor
+@AllArgsConstructor
 public class Article {
     @Id // for mapping id to DB entity for articleRepository.findById
     private String id; // final muss und darf nur einmal instantiert werden (best practice)

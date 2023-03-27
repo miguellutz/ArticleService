@@ -6,6 +6,7 @@ import com.obi.articleservice.model.Article;
 import com.obi.articleservice.model.CountryArticle;
 import com.obi.articleservice.model.CountryArticleId;
 import com.obi.articleservice.repository.ArticleRepository;
+import com.obi.articleservice.util.TestDataUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -129,9 +130,9 @@ public class ArticleControllerIntegrationTest {
         // GIVEN
         assertThat(articleRepository.count()).isEqualTo(0);
 
-        articleRepository.save(createArticle());
-        articleRepository.save(createArticle());
-        articleRepository.save(createArticle());
+        articleRepository.save(TestDataUtil.createArticle());
+        articleRepository.save(TestDataUtil.createArticle());
+        articleRepository.save(TestDataUtil.createArticle());
         assertThat(articleRepository.count()).isEqualTo(3);
 
         // WHEN get find all
@@ -144,23 +145,6 @@ public class ArticleControllerIntegrationTest {
         assertThat(articleDtos.length).isEqualTo(3); // Arrays --> .length, Lists --> .size()
         /*assertThat(persistedArticle.getId()).isEqualTo(id);
         assertThat(persistedArticle.getInternationalArticleNumber()).isEqualTo("123");*/
-    }
-
-    private static Article createArticle() {
-        Article article = new Article();
-
-        // create country
-        List<CountryArticle> countryArticles = new ArrayList<>();
-        countryArticles.add(new CountryArticle(new CountryArticleId(null,"DE"), "Kovalex", false, article));
-
-        // set article properties
-        article.setId(UUID.randomUUID().toString());
-        article.setInternationalArticleNumber(UUID.randomUUID().toString());
-        article.setLength(2.1);
-        article.setHeight(2.2);
-        article.setWidth(2.3);
-        article.setCountryArticles(countryArticles);
-        return article;
     }
 
     @DisplayName("Valid article is created")
