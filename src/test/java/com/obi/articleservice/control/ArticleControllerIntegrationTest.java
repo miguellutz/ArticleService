@@ -1,7 +1,10 @@
 package com.obi.articleservice.control;
 
 import com.obi.articleservice.dto.ArticleDto;
+import com.obi.articleservice.dto.CountryArticleDto;
 import com.obi.articleservice.model.Article;
+import com.obi.articleservice.model.CountryArticle;
+import com.obi.articleservice.model.CountryArticleId;
 import com.obi.articleservice.repository.ArticleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +19,8 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -120,21 +125,42 @@ public class ArticleControllerIntegrationTest {
     @DisplayName("Get all persisted articles and return 200 status code")
     @Test
     void findAll() {
+
         // GIVEN
         assertThat(articleRepository.count()).isEqualTo(0);
-        articleRepository.save(new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0));
-        articleRepository.save(new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0));
-        articleRepository.save(new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0));
+
+        articleRepository.save(createArticle());
+        articleRepository.save(createArticle());
+        articleRepository.save(createArticle());
         assertThat(articleRepository.count()).isEqualTo(3);
 
+        // WHEN get find all
         ResponseEntity<ArticleDto[]> response = restTemplate.getForEntity(apiUrl, ArticleDto[].class);
-        ArticleDto[] articleDtos = response.getBody();
 
+        // THEN ensure all articles are returned
         assertThat(response.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
+        ArticleDto[] articleDtos = response.getBody();
+        assertThat(articleDtos).isNotNull();
         assertThat(articleDtos.length).isEqualTo(3); // Arrays --> .length, Lists --> .size()
         /*assertThat(persistedArticle.getId()).isEqualTo(id);
         assertThat(persistedArticle.getInternationalArticleNumber()).isEqualTo("123");*/
+    }
 
+    private static Article createArticle() {
+        Article article = new Article();
+
+        // create country
+        List<CountryArticle> countryArticles = new ArrayList<>();
+        countryArticles.add(new CountryArticle(new CountryArticleId(null,"DE"), "Kovalex", false, article));
+
+        // set article properties
+        article.setId(UUID.randomUUID().toString());
+        article.setInternationalArticleNumber(UUID.randomUUID().toString());
+        article.setLength(2.1);
+        article.setHeight(2.2);
+        article.setWidth(2.3);
+        article.setCountryArticles(countryArticles);
+        return article;
     }
 
     @DisplayName("Valid article is created")
@@ -143,6 +169,11 @@ public class ArticleControllerIntegrationTest {
         assertThat(articleRepository.count()).isEqualTo(0);
 
         ArticleDto articleDto = new ArticleDto(null, "123", 20.0, 20.0, 2.0);
+
+        List<CountryArticleDto> countryArticleDtos = new ArrayList<>();
+        countryArticleDtos.add(new CountryArticleDto("DE", "Kovalex", false));
+        ArticleDto articleDtos = new ArticleDto(null, "123", 2.0, 2.0, 2.0, countryArticleDtos);
+
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<ArticleDto> request = new HttpEntity<>(articleDto, headers);
 
@@ -215,7 +246,19 @@ public class ArticleControllerIntegrationTest {
         assertThat(articleRepository.count()).isEqualTo(0);
 
         String id = UUID.randomUUID().toString();
-        Article newArticle = new Article(id, "123", 2.0, 2.0, 2.0);
+
+        // create Article
+        Article newArticle = new Article();
+        newArticle.setId(id);
+        //create and set countryArticles
+        List<CountryArticle> countryArticles = new ArrayList<>();
+        countryArticles.add(new CountryArticle(new CountryArticleId(null, "DE"), "DE", true, newArticle);
+        countryArticles.add(new CountryArticle());
+        newArticle.setCountryArticles(countryArticles);
+        // set internetionalArticleNumger width
+        //, "123", 2.0, 2.0, 2.0, countryArticles
+
+
         articleRepository.save(newArticle);
 
         assertThat(articleRepository.count()).isEqualTo(1);

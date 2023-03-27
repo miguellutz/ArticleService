@@ -12,6 +12,8 @@ import lombok.Setter;
 @RequiredArgsConstructor
 // @NoArgsConstructor (Default Constructor) --> as soon as new constructor added need to add manually
 public class CountryArticleDto {
+
+    private final String country;
     private final String title;
     private final Boolean active; // work with classes instead of primitives to prevent default value
 }

@@ -3,9 +3,7 @@ package com.obi.articleservice.control;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obi.articleservice.dto.ArticleCreationDto;
 import com.obi.articleservice.dto.ArticleDto;
-import com.obi.articleservice.dto.CountryArticleDto;
 import com.obi.articleservice.model.Article;
-import com.obi.articleservice.model.CountryArticle;
 import com.obi.articleservice.service.ArticleService;
 import com.obi.articleservice.util.ArticleMapper;
 import jakarta.validation.Valid;
@@ -84,7 +82,7 @@ public class ArticleController {
     @GetMapping
     public List<ArticleDto> findAll() {
         List<Article> allArticles = articleService.findAll();
-        return mapArticlesStream(allArticles);
+        return ArticleMapper.mapArticlesStream(allArticles);
     } // findAll( ) on articleRepository will always return a list --> therefore always returns 200
 
     private List<ArticleDto> mapToDtos(List<Article> allArticles) {
@@ -95,20 +93,14 @@ public class ArticleController {
         }
         return result;
     }
-    private List<ArticleDto> mapArticlesForEach(List<Article> allArticles) {
+    /*private List<ArticleDto> mapArticlesForEach(List<Article> allArticles) {
         List<ArticleDto> result = new ArrayList<>();
         allArticles.forEach( article -> {
             ArticleDto mappedDto = ArticleMapper.mapToDto(article);
             result.add(mappedDto);
         });
         return result;
-    }
-
-    private List<ArticleDto> mapArticlesStream(List<Article> allArticles) {
-        return allArticles.stream()
-                .map(article -> ArticleMapper.mapToDto(article))
-                .collect(Collectors.toList());
-    }
+    }*/
 
     // GET /article/uuid-12-udasdasd
     @GetMapping("/{id}")
@@ -132,7 +124,7 @@ public class ArticleController {
             return ResponseEntity.badRequest().build();
         } */ // --> no need for this since passed ArticleDto will always be valid?
         // throw new IllegalStateException("Oh Oh, unexpected error");
-        Article newArticle = articleService.create(ArticleMapper.mapToEntity(articleCreationDto));
+        Article newArticle = articleService.create(ArticleMapper.mapArticleCreationDtoToEntity(articleCreationDto));
         // return ResponseEntity.ok(mapToDto(newArticle));
         return ResponseEntity.status(HttpStatus.CREATED).body(ArticleMapper.mapToDto(newArticle));
         // return ResponseEntity.created(URI.create("http://localhost:8080/api/article/" + newArticle.getId())).build();
@@ -158,7 +150,7 @@ public class ArticleController {
         if (!articleService.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id " + id + " not found");
         }
-        Article savedArticle = articleService.update(ArticleMapper.mapToEntity(articleDto));
+        Article savedArticle = articleService.update(ArticleMapper.mapArticleDtoToEntity(articleDto));
         return ResponseEntity.ok(savedArticle);
     }
 

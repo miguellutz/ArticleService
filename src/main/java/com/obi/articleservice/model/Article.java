@@ -1,9 +1,6 @@
 package com.obi.articleservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +14,6 @@ import java.util.List;
 // @NoArgsConstructor --> default constructor
 @Data      // für standard plain old java objects (pojos) --> getter, setter, noargs... (von Lombok)
 @Accessors(chain = true)
-@AllArgsConstructor
 @NoArgsConstructor
 public class Article {
     @Id // for mapping id to DB entity for articleRepository.findById
@@ -31,7 +27,18 @@ public class Article {
     @NotNull(message = "Length cannot be null")
     private Double length;
 
-    @OneToMany(mappedBy = "article")
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<CountryArticle> countryArticles;
 
+    /*
+    public Article(String id, String internationalArticleNumber, Double height, Double width, Double length, List<CountryArticle> countryArticles) {
+        this.id = id;
+        this.internationalArticleNumber = internationalArticleNumber;
+        this.height = height;
+        this.width = width;
+        this.length = length;
+        this.countryArticles = countryArticles;
+        // ensure article is correctly referenced in CountryArticle
+        this.countryArticles.forEach(countryArticle -> countryArticle.setArticle(this));
+    }*/
 }

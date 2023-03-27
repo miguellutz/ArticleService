@@ -33,11 +33,8 @@ public class ArticleService {       // bean: class with business logic (spring /
     }
 
     public Article create(Article article) {
-        if(article.getId() != null) {
-            throw new IllegalArgumentException("id must be null on creation");
-        }
-        article.setId(UUID.randomUUID().toString());
-        return articleRepository.save(article);
+        Article savedArticle = articleRepository.save(article);
+        return savedArticle;
     }
 
     public Article update(Article article) {

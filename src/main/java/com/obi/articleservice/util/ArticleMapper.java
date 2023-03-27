@@ -5,19 +5,19 @@ import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.dto.CountryArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.model.CountryArticle;
+import com.obi.articleservice.model.CountryArticleId;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE) // not possible to instantiate class. Like NoArgsConstructor but private
 public class ArticleMapper {    // no service since no own properties, just methods
 
-    public static Article mapToEntity(ArticleDto articleDto) {
+    public static Article mapArticleDtoToEntity(ArticleDto articleDto) {
         Article article = new Article();
-        article.setId(articleDto.getId());
         article.setInternationalArticleNumber(articleDto.getInternationalArticleNumber());
         article.setWidth(articleDto.getWidth());
         article.setLength(articleDto.getLength());
@@ -28,8 +28,9 @@ public class ArticleMapper {    // no service since no own properties, just meth
         return article;
     }
 
-    public static Article mapToEntity(ArticleCreationDto articleCreationDto) {
+    public static Article mapArticleCreationDtoToEntity(ArticleCreationDto articleCreationDto) {
         Article article = new Article();
+        article.setId(UUID.randomUUID().toString());
         article.setInternationalArticleNumber(articleCreationDto.getInternationalArticleNumber());
         article.setWidth(articleCreationDto.getWidth());
         article.setLength(articleCreationDto.getLength());
@@ -42,15 +43,22 @@ public class ArticleMapper {    // no service since no own properties, just meth
         return new ArticleDto(article.getId(), article.getInternationalArticleNumber(), article.getHeight(), article.getWidth(), article.getLength(), mapToCountryArticleDtos(article.getCountryArticles()));
     }
 
-    private List<CountryArticle> mapCountryArticles(ArticleDto articleDto, Article article) {
+    public static List<ArticleDto> mapArticlesStream(List<Article> allArticles) {
+        return allArticles.stream()
+                .map(ArticleMapper::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    private static List<CountryArticle> mapCountryArticles(ArticleDto articleDto, Article article) {
         List<CountryArticleDto> countryArticles = articleDto.getCountryArticles();
         return countryArticles.stream()
                 .map(countryArticleDto -> mapCountryArticle(countryArticleDto, article))
                 .collect(Collectors.toList());
     }
 
-    private CountryArticle mapCountryArticle(CountryArticleDto countryArticleDto, Article article) {
+    private static CountryArticle mapCountryArticle(CountryArticleDto countryArticleDto, Article article) {
         CountryArticle countryArticle = new CountryArticle();
+        countryArticle.setId(mapCountryArticleId(null, countryArticleDto.getCountry()));
         countryArticle.setTitle(countryArticleDto.getTitle());
         countryArticle.setActive(countryArticleDto.getActive());
         countryArticle.setArticle(article);
@@ -58,20 +66,27 @@ public class ArticleMapper {    // no service since no own properties, just meth
         return countryArticle;
     }
 
-    private List<CountryArticle> mapArticleCreationCountryArticles(ArticleCreationDto articleCreationDto, Article article) {
+    private static CountryArticleId mapCountryArticleId(String id, String country) {
+        CountryArticleId result = new CountryArticleId();
+        result.setCountry(country);
+        result.setId(id);
+        return result;
+    }
+
+    private static List<CountryArticle> mapArticleCreationCountryArticles(ArticleCreationDto articleCreationDto, Article article) {
         List<CountryArticleDto> countryArticles = articleCreationDto.getCountryArticles();
         return countryArticles.stream()
                 .map(countryArticleDto -> mapCountryArticle(countryArticleDto, article))
                 .collect(Collectors.toList());
     }
 
-    private List<CountryArticleDto> mapToCountryArticleDtos(List<CountryArticle> countryArticles) {
+    private static List<CountryArticleDto> mapToCountryArticleDtos(List<CountryArticle> countryArticles) {
         return countryArticles.stream()
                 .map(countryArticle -> mapToCountryArticleDto(countryArticle))
                 .collect(Collectors.toList());
     }
 
-    private CountryArticleDto mapToCountryArticleDto(CountryArticle countryArticle) {
-        return new CountryArticleDto(countryArticle.getTitle(), countryArticle.getActive());
+    private static CountryArticleDto mapToCountryArticleDto(CountryArticle countryArticle) {
+        return new CountryArticleDto(countryArticle.getId().getCountry(), countryArticle.getTitle(), countryArticle.getActive());
     }
 }
