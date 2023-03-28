@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obi.articleservice.dto.ArticleDto;
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.service.ArticleService;
+import com.obi.articleservice.util.TestDataUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -48,7 +49,7 @@ public class ArticleControllerTest {
         String id = UUID.randomUUID().toString();
         RequestBuilder request = get("/api/article/" + id);
 
-        Article foundArticle = new Article(id, "123", 20.0, 2.0, 2.0);
+        Article foundArticle = new Article(id, "123", 20.0, 2.0, 2.0, new ArrayList<>());
         Mockito.when(articleService.findById(id)).thenReturn(Optional.of(foundArticle));
 
         //WHEN //THEN
@@ -81,7 +82,7 @@ public class ArticleControllerTest {
         result.getResponse().getContentAsString();*/
 
         ArrayList<Article> articles = new ArrayList<>();
-        articles.add(new Article(UUID.randomUUID().toString(), "123", 20.0, 2.0, 2.0));
+        articles.add(new Article(UUID.randomUUID().toString(), "123", 20.0, 2.0, 2.0, new ArrayList<>()));
         Mockito.when(articleService.findAll()).thenReturn(articles);
         mvc.perform(request)
                 .andExpect(status().isOk())
@@ -91,11 +92,11 @@ public class ArticleControllerTest {
     @Test
     void create() throws Exception {
         // input in controller
-        ArticleDto articleDto = new ArticleDto(null, "123", 2.0, 2.0, 2.0);
+        ArticleDto articleDto = new ArticleDto(null, "123", 2.0, 2.0, 2.0, new ArrayList<>());
         // mapped to entity for Service
-        Article mappedToEntity = new Article(null, "123", 2.0, 2.0, 2.0);
+        Article mappedToEntity = new Article(null, "123", 2.0, 2.0, 2.0, new ArrayList<>());
         // service returns entity with new generated ID
-        Article mockedPersistedArticle = new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0);
+        Article mockedPersistedArticle = new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0, new ArrayList<>());
 
         Mockito.when(articleService.create(mappedToEntity)).thenReturn(mockedPersistedArticle);
 
@@ -125,7 +126,7 @@ public class ArticleControllerTest {
     void update() throws Exception {
 
         String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0, new ArrayList<>());
 
         Mockito.when(articleService.existsById(id)).thenReturn(true);
         Mockito.when(articleService.create(article)).thenReturn(article);
@@ -144,7 +145,7 @@ public class ArticleControllerTest {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        Article article = new Article(UUID.randomUUID().toString(), "123", 2.0, 2.0, 2.0);
+        Article article = TestDataUtil.createArticle();
 
         RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -160,9 +161,9 @@ public class ArticleControllerTest {
         Mockito.when(articleService.existsById(any())).thenReturn(false);
 
         String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0, new ArrayList<>());
 
-        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/"+id)
+        RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(article));
 
