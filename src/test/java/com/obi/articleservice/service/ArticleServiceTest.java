@@ -2,6 +2,7 @@ package com.obi.articleservice.service;
 
 import com.obi.articleservice.model.Article;
 import com.obi.articleservice.repository.ArticleRepository;
+import com.obi.articleservice.util.TestDataUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,9 +35,9 @@ public class ArticleServiceTest {
 
         // GIVEN multiple articles in repository
         List<Article> articleList = new ArrayList<>();
-        articleList.add(new Article(UUID.randomUUID().toString(), "1", 20.0, 2.0, 2.0)); // --> use TestDataUtil
-        articleList.add(new Article(UUID.randomUUID().toString(), "2", 20.0, 2.0, 2.0));
-        articleList.add(new Article(UUID.randomUUID().toString(), "3", 20.0, 2.0, 2.0));
+        articleList.add(TestDataUtil.createArticle());
+        articleList.add(TestDataUtil.createArticle());
+        articleList.add(TestDataUtil.createArticle());
 
         Mockito.when(mockedArticleRepository.findAll()).thenReturn(articleList);
 
@@ -54,7 +55,7 @@ public class ArticleServiceTest {
     void findById() {
         // GIVEN article in DB
         String id = UUID.randomUUID().toString();
-        Article article = new Article(id, "123", 2.0, 2.0, 2.0);
+        Article article = new Article(id, "123", 2.0, 2.0, 2.0, new ArrayList<>());
 
         // WHEN article is searched by id
         Mockito.when(mockedArticleRepository.findById(anyString())).thenReturn(Optional.of(article));
@@ -82,34 +83,34 @@ public class ArticleServiceTest {
     void create() {
 
         // GIVEN articleRepository successfully saves existing article
-        Article article = new Article(null, "123", 2.0, 2.0, 2.0);
+        Article article = new Article(null, "123", 2.0, 2.0, 2.0, new ArrayList<>()); // on creation id is not null
         Mockito.when(mockedArticleRepository.save(article)).thenReturn(article);
 
-        Article savedArticle = articleService.create(article);
+        Article savedArticle = articleService.create(article);      // --> should articleService / articleRepository return bad request when article id is null?
 
         assertThat(savedArticle).usingRecursiveComparison().isEqualTo(article);
-        assertThat(savedArticle.getId()).isEqualTo(savedArticle.getId());
+        assertThat(savedArticle.getId()).isEqualTo(article.getId());
 
         verify(mockedArticleRepository, times(1)).save(any(Article.class));
         verifyNoMoreInteractions(mockedArticleRepository);
     }
 
-    @DisplayName("Return article with new id when saving a new article")
+    @DisplayName("Return article with new height when updating height")
     @Test
     void update() {
         // GIVEN article is already created
-        Article newArticle = new Article(null, "123", 2.0, 2.0, 2.0);
+        Article newArticle = new Article(null, "123", 2.0, 2.0, 2.0, new ArrayList<>()); // id when updating also not null
         Mockito.when(mockedArticleRepository.save(newArticle)).thenReturn(newArticle);
         Article createdArticle = articleService.create(newArticle);
 
         // WHEN updating article
         createdArticle.setHeight(123123.0);
         Mockito.when(mockedArticleRepository.save(createdArticle)).thenReturn(createdArticle);
-        Article savedArticle = articleService.update(createdArticle);
+        Article updatedArticle = articleService.update(createdArticle);
 
         // THEN ensure article has been updated
-        assertThat(savedArticle.getHeight()).isNotNull();
-        assertThat(savedArticle.getHeight()).isEqualTo(123123.0);
+        assertThat(updatedArticle.getHeight()).isNotNull();
+        assertThat(updatedArticle.getHeight()).isEqualTo(123123.0);
     }
 
     @DisplayName("Return nothing when article is deleted")
