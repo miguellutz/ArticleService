@@ -147,8 +147,7 @@ public class ArticleController {
         if (!id.equals(articleDto.getId())) {
             return ResponseEntity.badRequest().build();
         }
-        Optional<Article> existingById = articleService.findById(id);
-        if (existingById.isEmpty()) {
+        if (!articleService.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id " + id + " not found");
         }
         // Article updatedArticle = getUpdatedArticle(articleDto, existingById.get());
