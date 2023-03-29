@@ -135,7 +135,7 @@ public class ArticleControllerTest {
         ArticleDto articleDto = new ArticleDto(id, "123", 2.0, 2.0, 2.0, new ArrayList<>());
         Article article = new Article(id, "123", 2.0, 2.0, 2.0, new ArrayList<>());
 
-        Mockito.when(articleService.existsById(id)).thenReturn(true);
+        Mockito.when(articleService.findById(id)).thenReturn(Optional.of(article));
         Mockito.when(articleService.update(article)).thenReturn(article);
 
         RequestBuilder request = MockMvcRequestBuilders.put("/api/article/" + id)
