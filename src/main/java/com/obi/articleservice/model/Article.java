@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "article")
@@ -30,6 +31,8 @@ public class Article {
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.EAGER) // only loaded if necessary (when using getter)
     private List<CountryArticle> countryArticles;
+
+
 
     /*
     public Article(String id, String internationalArticleNumber, Double height, Double width, Double length, List<CountryArticle> countryArticles) {

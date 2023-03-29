@@ -83,7 +83,7 @@ public class ArticleServiceTest {
     void create() {
 
         // GIVEN articleRepository successfully saves existing article
-        Article article = new Article(null, "123", 2.0, 2.0, 2.0, new ArrayList<>()); // on creation id is not null
+        Article article = new Article("123", "123", 2.0, 2.0, 2.0, new ArrayList<>()); // on creation id is not null
         Mockito.when(mockedArticleRepository.save(article)).thenReturn(article);
 
         Article savedArticle = articleService.create(article);      // --> should articleService / articleRepository return bad request when article id is null?

@@ -36,12 +36,11 @@ public class ArticleService {       // bean: class with business logic (spring /
 
     public Article create(Article article) {
         // begin transaction
-        Article savedArticle = articleRepository.save(article);
-        return savedArticle;
+        return articleRepository.save(article);
         // end transaction by committing
     }
 
-    public Article update(Article article) {
+    public Article update(Article article) { // --> aus update save machen und create und update zusammenführen
         if(article.getId() == null || article.getId().isBlank()){
             throw new IllegalArgumentException("id must not be null on update");
         }

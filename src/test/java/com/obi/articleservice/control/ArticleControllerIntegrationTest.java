@@ -260,8 +260,8 @@ public class ArticleControllerIntegrationTest {
 
         //create and set countryArticles
         List<CountryArticle> countryArticles = new ArrayList<>();
-        countryArticles.add(new CountryArticle(new CountryArticleId(id, "DE"), "Kovalex", true, newArticle));
-        countryArticles.add(new CountryArticle(new CountryArticleId(id, "AU"), "Wood Decking Board", true, newArticle));
+        countryArticles.add(new CountryArticle(new CountryArticleId(null, "DE"), "Kovalex", true, newArticle));
+        countryArticles.add(new CountryArticle(new CountryArticleId(null, "AU"), "Wood Decking Board", true, newArticle));
         newArticle.setCountryArticles(countryArticles);
 
         Article createdArticle = articleRepository.save(newArticle);

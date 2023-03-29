@@ -50,7 +50,7 @@ public class ArticleMapper {    // no service since no own properties, just meth
                 .collect(Collectors.toList());
     }
 
-    private static List<CountryArticle> mapCountryArticles(ArticleDto articleDto, Article article) {
+    public static List<CountryArticle> mapCountryArticles(ArticleDto articleDto, Article article) {
         List<CountryArticleDto> countryArticles = articleDto.getCountryArticles();
         return countryArticles.stream()
                 .map(countryArticleDto -> mapCountryArticle(countryArticleDto, article))
