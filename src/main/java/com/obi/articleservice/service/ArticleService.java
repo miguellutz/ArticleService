@@ -4,6 +4,7 @@ import com.obi.articleservice.model.Article;
 import com.obi.articleservice.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import java.util.UUID;
 
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ArticleService {       // bean: class with business logic (spring / frameworks)
 
@@ -33,8 +35,10 @@ public class ArticleService {       // bean: class with business logic (spring /
     }
 
     public Article create(Article article) {
+        // begin transaction
         Article savedArticle = articleRepository.save(article);
         return savedArticle;
+        // end transaction by committing
     }
 
     public Article update(Article article) {

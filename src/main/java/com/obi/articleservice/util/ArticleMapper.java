@@ -18,6 +18,7 @@ public class ArticleMapper {    // no service since no own properties, just meth
 
     public static Article mapArticleDtoToEntity(ArticleDto articleDto) {
         Article article = new Article();
+        article.setId(articleDto.getId());
         article.setInternationalArticleNumber(articleDto.getInternationalArticleNumber());
         article.setWidth(articleDto.getWidth());
         article.setLength(articleDto.getLength());
@@ -58,7 +59,7 @@ public class ArticleMapper {    // no service since no own properties, just meth
 
     private static CountryArticle mapCountryArticle(CountryArticleDto countryArticleDto, Article article) {
         CountryArticle countryArticle = new CountryArticle();
-        countryArticle.setId(mapCountryArticleId(null, countryArticleDto.getCountry()));
+        countryArticle.setId(mapCountryArticleId(article.getId(), countryArticleDto.getCountry()));
         countryArticle.setTitle(countryArticleDto.getTitle());
         countryArticle.setActive(countryArticleDto.getActive());
         countryArticle.setArticle(article);
@@ -80,7 +81,7 @@ public class ArticleMapper {    // no service since no own properties, just meth
                 .collect(Collectors.toList());
     }
 
-    private static List<CountryArticleDto> mapToCountryArticleDtos(List<CountryArticle> countryArticles) {
+    public static List<CountryArticleDto> mapToCountryArticleDtos(List<CountryArticle> countryArticles) {
         return countryArticles.stream()
                 .map(countryArticle -> mapToCountryArticleDto(countryArticle))
                 .collect(Collectors.toList());

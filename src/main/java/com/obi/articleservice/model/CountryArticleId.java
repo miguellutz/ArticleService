@@ -11,6 +11,7 @@ import java.io.Serializable;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class CountryArticleId implements Serializable {
     private String id;
     private String country;

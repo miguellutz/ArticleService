@@ -28,7 +28,7 @@ public class Article {
     @NotNull(message = "Length cannot be null")
     private Double length;
 
-    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.EAGER) // only loaded if necessary (when using getter)
     private List<CountryArticle> countryArticles;
 
     /*

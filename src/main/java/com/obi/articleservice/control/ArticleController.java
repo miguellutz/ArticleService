@@ -147,11 +147,23 @@ public class ArticleController {
         if (!id.equals(articleDto.getId())) {
             return ResponseEntity.badRequest().build();
         }
-        if (!articleService.existsById(id)) {
+        Optional<Article> existingById = articleService.findById(id);
+        if (existingById.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Article with id " + id + " not found");
         }
-        Article savedArticle = articleService.update(ArticleMapper.mapArticleDtoToEntity(articleDto));
-        return ResponseEntity.ok(savedArticle);
+        // Article updatedArticle = getUpdatedArticle(articleDto, existingById.get());
+        Article updatedArticle = ArticleMapper.mapArticleDtoToEntity(articleDto);
+        Article savedArticle = articleService.update(updatedArticle);
+        return ResponseEntity.ok(ArticleMapper.mapToDto(savedArticle));
+    }
+
+    private static Article getUpdatedArticle(ArticleDto articleDto, Article existingArticle) {
+        Article updateRequestArticle = ArticleMapper.mapArticleDtoToEntity(articleDto);
+        existingArticle.setCountryArticles(updateRequestArticle.getCountryArticles());
+        existingArticle.setHeight(updateRequestArticle.getHeight());
+        existingArticle.setLength(updateRequestArticle.getLength());
+        existingArticle.setWidth(updateRequestArticle.getWidth());
+        return existingArticle;
     }
 
     // delete über params oder gepasster id?

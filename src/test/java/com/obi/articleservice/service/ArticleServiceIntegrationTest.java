@@ -38,8 +38,8 @@ class ArticleServiceIntegrationTest {
         List<Article> initialFoundArticles = articleService.findAll();
         Assertions.assertThat(initialFoundArticles.size()).isEqualTo(0);
 
-        articleService.create(new Article(null, "123", 1.0, 1.0, 1.0, new ArrayList<>()));
-        articleService.create(new Article(null, "123", 1.0, 1.0, 1.0, new ArrayList<>()));
+        articleService.create(new Article("123", "123", 1.0, 1.0, 1.0, new ArrayList<>())); // --> id's need to be assigned manually?
+        articleService.create(new Article("1234", "123", 1.0, 1.0, 1.0, new ArrayList<>()));
 
 
         // WHEN
@@ -54,7 +54,7 @@ class ArticleServiceIntegrationTest {
     @DisplayName("Ensure new article got new id")
     @Test
     void saveNewArticle() {
-        Article savedArticle = articleService.create(new Article(null, "123", 1.0, 1.0, 1.0, new ArrayList<>()));
+        Article savedArticle = articleService.create(new Article("123", "123", 1.0, 1.0, 1.0, new ArrayList<>()));
         assertThat(savedArticle.getId()).isNotBlank();
     }
 
@@ -62,7 +62,7 @@ class ArticleServiceIntegrationTest {
     @Test
     void updateArticle() {
         // GIVEN article exists in DB
-        Article existingArticle = articleService.create(new Article(null, "123", 5.0, 5.0, 5.0, new ArrayList<>()));
+        Article existingArticle = articleService.create(new Article("123", "123", 5.0, 5.0, 5.0, new ArrayList<>()));
 
         // WHEN article is updated
         existingArticle.setInternationalArticleNumber("202");
@@ -75,7 +75,7 @@ class ArticleServiceIntegrationTest {
     @DisplayName("Existing article is deleted after delete is called")
     @Test
     void deleteArticle() {
-        Article savedArticle = articleService.create(new Article(null, "123", 6.0, 6.0, 6.0, new ArrayList<>()));
+        Article savedArticle = articleService.create(new Article("123", "123", 6.0, 6.0, 6.0, new ArrayList<>()));
 
         articleService.deleteById(savedArticle.getId());
 

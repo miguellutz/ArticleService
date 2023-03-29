@@ -99,7 +99,7 @@ public class ArticleServiceTest {
     @Test
     void update() {
         // GIVEN article is already created
-        Article newArticle = new Article(null, "123", 2.0, 2.0, 2.0, new ArrayList<>()); // id when updating also not null
+        Article newArticle = new Article("123", "123", 2.0, 2.0, 2.0, new ArrayList<>()); // id when updating also not null
         Mockito.when(mockedArticleRepository.save(newArticle)).thenReturn(newArticle);
         Article createdArticle = articleService.create(newArticle);
 

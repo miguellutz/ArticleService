@@ -6,6 +6,8 @@ import com.obi.articleservice.model.Article;
 import com.obi.articleservice.model.CountryArticle;
 import com.obi.articleservice.model.CountryArticleId;
 import com.obi.articleservice.repository.ArticleRepository;
+import com.obi.articleservice.service.ArticleService;
+import com.obi.articleservice.util.ArticleMapper;
 import com.obi.articleservice.util.TestDataUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +21,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +36,9 @@ public class ArticleControllerIntegrationTest {
 
     @Autowired
     private ArticleRepository articleRepository;
+
+    @Autowired
+    private ArticleService articleService;
 
     @BeforeEach
     void beforeTest() {
@@ -77,7 +83,8 @@ public class ArticleControllerIntegrationTest {
 
         // write one article in DB
         String id = UUID.randomUUID().toString();
-        articleRepository.save(TestDataUtil.createArticle());
+        Article article = new Article(id, "123", 1.0, 2.0, 3.0, new ArrayList<>());
+        articleRepository.save(article);
 
         // ensure DB count is 1
         assertThat(articleRepository.count()).isEqualTo(1);
@@ -242,35 +249,44 @@ public class ArticleControllerIntegrationTest {
         // GIVEN ensure article exists in DB
         assertThat(articleRepository.count()).isEqualTo(0);
 
-        String id = UUID.randomUUID().toString();
-
         // create Article
+        String id = UUID.randomUUID().toString();
         Article newArticle = new Article();
         newArticle.setId(id);
+        newArticle.setInternationalArticleNumber("123");
+        newArticle.setHeight(1.0);
+        newArticle.setWidth(2.0);
+        newArticle.setLength(3.0);
+
         //create and set countryArticles
         List<CountryArticle> countryArticles = new ArrayList<>();
-        countryArticles.add(new CountryArticle(new CountryArticleId(null, "DE"), "Kovalex", true, newArticle));
-        countryArticles.add(new CountryArticle());
+        countryArticles.add(new CountryArticle(new CountryArticleId(id, "DE"), "Kovalex", true, newArticle));
+        countryArticles.add(new CountryArticle(new CountryArticleId(id, "AU"), "Wood Decking Board", true, newArticle));
         newArticle.setCountryArticles(countryArticles);
-        // set internetionalArticleNumger width
-        //, "123", 2.0, 2.0, 2.0, countryArticles
 
-        articleRepository.save(newArticle);
+        Article createdArticle = articleRepository.save(newArticle);
 
-        assertThat(articleRepository.count()).isEqualTo(1);
+       // create via post
+        /* HttpHeaders createHeaders = new HttpHeaders();
+        HttpEntity<ArticleDto> createRequest = new HttpEntity<>(ArticleMapper.mapToDto(newArticle), createHeaders);
+        ResponseEntity<ArticleDto> createResponse = restTemplate.postForEntity(apiUrl, createRequest, ArticleDto.class);
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(201));*/
+
 
         // WHEN article is updated via PUT Request
-        newArticle.setInternationalArticleNumber("321");
+        //ArticleDto toBeUpdated =  new ArticleDto(createdArticle.getId(), "321", createdArticle.getHeight(), createdArticle.getWidth(), createdArticle.getLength(), createdArticle.getCountryArticles());
 
+        createdArticle.setInternationalArticleNumber("321");
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity<Article> requestUpdate = new HttpEntity<>(newArticle, headers);
-        ResponseEntity<ArticleDto> response = restTemplate.exchange(apiUrl + "/" + id, HttpMethod.PUT, requestUpdate, ArticleDto.class);
+        HttpEntity<ArticleDto> requestUpdate = new HttpEntity<>(ArticleMapper.mapToDto(createdArticle), headers);
+        ResponseEntity<ArticleDto> response = restTemplate.exchange(apiUrl + "/" + createdArticle.getId(), HttpMethod.PUT, requestUpdate, ArticleDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         // THEN ensure article is updated in DB
-        Article updatedArticleFromDB = articleRepository.findById(id).orElseThrow();
+        Article updatedArticleFromDB = articleRepository.findById(createdArticle.getId()).orElseThrow();
         assertThat(updatedArticleFromDB.getInternationalArticleNumber()).isEqualTo("321");
     }
+
 
     @DisplayName("Ensure update on non-existing article throws 404 not found")
     @Test
@@ -289,20 +305,22 @@ public class ArticleControllerIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    //@Transactional --> same as using FETCHTYPE.EAGER. Transaction needed for lazy loading
     @DisplayName("Ensure update on article with other id than path throws 400 bad request")
     @Test
     void updateIdMismatchArticle() {
         // GIVEN article in DB
-        Article article = TestDataUtil.createArticle();
+        String id = UUID.randomUUID().toString();
+        Article article = new Article(id, "123", 2.0, 2.1, 2.2, new ArrayList<>());
         articleRepository.save(article);
         assertThat(articleRepository.count()).isEqualTo(1);
 
         // WHEN update on article with different path
-        Article foundArticle = articleRepository.findById("123").get();
+        Article foundArticle = articleRepository.findById(id).get();
 
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Article> requestUpdate = new HttpEntity<>(foundArticle, headers);
-        ResponseEntity<?> response = restTemplate.exchange(apiUrl + "1", HttpMethod.PUT, requestUpdate, Void.class);
+        ResponseEntity<?> response = restTemplate.exchange(apiUrl + "/1", HttpMethod.PUT, requestUpdate, Void.class);
 
         // THEN return bad request
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

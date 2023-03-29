@@ -1,5 +1,6 @@
 package com.obi.articleservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class CountryArticle {
     private String title;
     private Boolean active; // work with classes instead of primitives to prevent default value
 
+    @JsonIgnore
     @ManyToOne
     @MapsId("id")
     @JoinColumn(name = "id", nullable = false, insertable = false, updatable = false)
