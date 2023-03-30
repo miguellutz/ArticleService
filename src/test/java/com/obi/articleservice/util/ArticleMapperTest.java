@@ -30,15 +30,6 @@ class ArticleMapperTest {
 
         ArticleDto articleDto = new ArticleDto("123", "123", 1.0, 2.0, 3.0, countryArticleDtos);
 
-        /*Article article = new Article();
-        article.setId("123");
-        List<CountryArticle> countryArticles = new ArrayList<>();
-        CountryArticle countryArticle1 = new CountryArticle(new CountryArticleId(null, "DE"), "Kovalex", true, article);
-        CountryArticle countryArticle2 = new CountryArticle(new CountryArticleId(null, "AU"), "Decking board", false, article);
-        countryArticles.add(countryArticle1);
-        countryArticles.add(countryArticle2);*/
-
-
         // WHEN mapped to entity
         Article mappedToEntity = ArticleMapper.mapArticleDtoToEntity(articleDto);
 
@@ -48,13 +39,26 @@ class ArticleMapperTest {
         assertThat(mappedToEntity.getHeight()).isEqualTo(1.0);
         assertThat(mappedToEntity.getWidth()).isEqualTo(2.0);
         assertThat(mappedToEntity.getLength()).isEqualTo(3.0);
+
         assertThat(mappedToEntity.getCountryArticles().size()).isEqualTo(2);
+
+        CountryArticle countryArticle1 = mappedToEntity.getCountryArticles().get(0);
+        assertThat(countryArticle1.getId().getId()).isEqualTo("123");
+        assertThat(countryArticle1.getId().getCountry()).isEqualTo("DE");
+        assertThat(countryArticle1.getTitle()).isEqualTo("Kovalex");
+        assertThat(countryArticle1.getActive()).isEqualTo(true);
+
+        CountryArticle countryArticle2 = mappedToEntity.getCountryArticles().get(1);
+        assertThat(countryArticle2.getId().getId()).isEqualTo("123");
+        assertThat(countryArticle2.getId().getCountry()).isEqualTo("AU");
+        assertThat(countryArticle2.getTitle()).isEqualTo("Decking board");
+        assertThat(countryArticle2.getActive()).isEqualTo(false);
     }
 
     @Test
     void mapArticleCreationDtoToEntity() {
 
-        // Given articleCreationDto
+        // GIVEN articleCreationDto
         List<CountryArticleDto> countryArticleDtos = new ArrayList<>();
         CountryArticleDto countryArticleDto1 = new CountryArticleDto("DE", "Kovalex", true);
         CountryArticleDto countryArticleDto2 = new CountryArticleDto("AU", "Decking board", false);
@@ -72,7 +76,20 @@ class ArticleMapperTest {
         assertThat(mappedToEntity.getHeight()).isEqualTo(1.0);
         assertThat(mappedToEntity.getWidth()).isEqualTo(2.0);
         assertThat(mappedToEntity.getLength()).isEqualTo(3.0);
+
         assertThat(mappedToEntity.getCountryArticles().size()).isEqualTo(2);
+
+        CountryArticle countryArticle1 = mappedToEntity.getCountryArticles().get(0);
+        assertThat(countryArticle1.getId().getId()).isNotEmpty();
+        assertThat(countryArticle1.getId().getCountry()).isEqualTo("DE");
+        assertThat(countryArticle1.getTitle()).isEqualTo("Kovalex");
+        assertThat(countryArticle1.getActive()).isEqualTo(true);
+
+        CountryArticle countryArticle2 = mappedToEntity.getCountryArticles().get(1);
+        assertThat(countryArticle2.getId().getId()).isNotEmpty();
+        assertThat(countryArticle2.getId().getCountry()).isEqualTo("AU");
+        assertThat(countryArticle2.getTitle()).isEqualTo("Decking board");
+        assertThat(countryArticle2.getActive()).isEqualTo(false);
     }
 
     @Test
@@ -102,6 +119,16 @@ class ArticleMapperTest {
         assertThat(articleDto.getHeight()).isEqualTo(1.0);
         assertThat(articleDto.getWidth()).isEqualTo(2.0);
         assertThat(articleDto.getLength()).isEqualTo(3.0);
+
         assertThat(articleDto.getCountryArticles().size()).isEqualTo(2);
+        CountryArticleDto CountryArticleDto1 = articleDto.getCountryArticles().get(0);
+        assertThat(CountryArticleDto1.getCountry()).isEqualTo("DE");
+        assertThat(CountryArticleDto1.getTitle()).isEqualTo("Kovalex");
+        assertThat(CountryArticleDto1.getActive()).isEqualTo(true);
+
+        CountryArticleDto countryArticleDto2 = articleDto.getCountryArticles().get(1);
+        assertThat(countryArticleDto2.getCountry()).isEqualTo("AU");
+        assertThat(countryArticleDto2.getTitle()).isEqualTo("Decking board");
+        assertThat(countryArticleDto2.getActive()).isEqualTo(false);
     }
 }
