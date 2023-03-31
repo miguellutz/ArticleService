@@ -30,3 +30,11 @@ public class ArticleDto { // no need for noargsconstructor, possibility to hide 
 
     private final List<CountryArticleDto> countryArticles;
 }
+/*
+{
+id:123
+width:2.0
+....
+countryArticles:[{country: AT},{country: DE}]
+}
+ */

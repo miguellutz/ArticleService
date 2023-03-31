@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: create countryArticle table
+      author: mlutz
+      changes:
+        - createTable:
+            tableName: country_article
+            columns:
+              - column:
+                  name: id
+                  type: varchar
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: country
+                  type: varchar
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: title
+                  type: varchar
+              - column:
+                  name: active
+                  type: boolean
+  - changeSet:
+      id: add countryArticleId foreign key
+      author: mlutz
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: id
+            baseTableName: country_article
+            baseTableSchemaName: public
+            constraintName: fk_country_article_article
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+            referencedColumnNames: id
+            referencedTableName: article
+            validate: true

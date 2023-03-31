@@ -1,0 +1,25 @@
+databaseChangeLog:
+  -  changeSet:
+       id:  1
+       author:  mlutz
+       changes:
+           - createTable:
+                tableName:  article
+                columns:
+                  - column:
+                       name:  id
+                       type: varchar
+                       constraints:
+                         primaryKey: true
+                  - column:
+                      name: international_article_number
+                      type: varchar
+                  - column:
+                      name: height
+                      type: double
+                  - column:
+                      name: width
+                      type: double
+                  - column:
+                      name: length
+                      type: double
