@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping(path = "/api/article", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ArticleController {
 
@@ -172,6 +173,12 @@ public class ArticleController {
             return ResponseEntity.notFound().build();
         }
         articleService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll() {
+        articleService.delete();
         return ResponseEntity.noContent().build();
     }
 

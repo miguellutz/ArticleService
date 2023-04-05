@@ -47,8 +47,8 @@ public class ArticleService {       // bean: class with business logic (spring /
         return articleRepository.save(article);
     }
 
-    public void delete(Article article){
-        articleRepository.deleteById(article.getId());
+    public void delete() {
+        articleRepository.deleteAll();
     }
 
     // Wie kann ich String mit message returnen und gleichzeitig aber auch gelöschtes Objekt?
